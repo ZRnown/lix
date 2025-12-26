@@ -127,18 +127,75 @@ class DiscuzSentinel:
         url = f"{BASE_URL}/forum.php"
         params = {'mod': 'misc', 'action': 'livelastpost', 'type': 'post', 'fid': fid, 'postid': last_pid}
         headers = {'Referer': f"{BASE_URL}/group-{fid}-1.html", 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
-        try:
-            response = self.session.get(url, params=params, headers=headers, timeout=10)
-            if 'not_loggedin' in response.text:
-                self.logger.warning("Cookie 可能已失效")
+
+        # 添加重试机制，最多重试2次
+        for attempt in range(3):
+            try:
+                self.logger.debug(f"FID {fid}: 请求 livelastpost (尝试 {attempt + 1}/3)")
+                response = self.session.get(url, params=params, headers=headers, timeout=15)
+
+                # 检查HTTP状态码
+                if response.status_code == 504:
+                    self.logger.warning(f"FID {fid}: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中")
+                    if attempt < 2:  # 不是最后一次尝试
+                        self.logger.info(f"FID {fid}: {5 * (attempt + 1)} 秒后重试...")
+                        time.sleep(5 * (attempt + 1))
+                        continue
+                    return None
+
+                if response.status_code != 200:
+                    self.logger.warning(f"FID {fid}: HTTP {response.status_code} 错误")
+                    return None
+
+                # 检查响应内容是否包含登录提示
+                response_text = response.text
+                if 'not_loggedin' in response_text:
+                    self.logger.warning(f"FID {fid}: Cookie 可能已失效")
+                    return None
+
+                if '504 Gateway Time-out' in response_text:
+                    self.logger.warning(f"FID {fid}: 响应内容显示网关超时")
+                    if attempt < 2:
+                        self.logger.info(f"FID {fid}: {5 * (attempt + 1)} 秒后重试...")
+                        time.sleep(5 * (attempt + 1))
+                        continue
+                    return None
+
+                # 尝试解析JSON
+                try:
+                    data = response.json()
+                except json.JSONDecodeError as e:
+                    self.logger.warning(f"FID {fid}: 响应不是有效JSON: {e}")
+                    self.logger.debug(f"FID {fid}: 响应内容前200字符: {response_text[:200]}")
+                    return None
+
+                count = int(data.get('count', 0))
+                if count > 0:
+                    self.logger.info(f"FID {fid}: 发现 {count} 条新内容")
+                    return data
+                else:
+                    self.logger.debug(f"FID {fid}: 暂无新内容 (count={count})")
+                    return None
+
+            except requests.exceptions.Timeout:
+                self.logger.warning(f"FID {fid}: 请求超时 (尝试 {attempt + 1}/3)")
+                if attempt < 2:
+                    time.sleep(3)
+                    continue
                 return None
-            data = response.json()
-            if int(data.get('count', 0)) > 0:
-                self.logger.info(f"FID {fid}: 发现 {data.get('count')} 条新内容")
-                return data
-            return None
-        except Exception:
-            return None
+
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f"FID {fid}: 网络请求异常: {e}")
+                if attempt < 2:
+                    time.sleep(3)
+                    continue
+                return None
+
+            except Exception as e:
+                self.logger.error(f"FID {fid}: 处理 livelastpost 时出现异常: {e}")
+                return None
+
+        return None
 
     def _get_thread_detail(self, tid: int, target_pid: Optional[int]) -> Optional[Dict]:
         url = f"{BASE_URL}/api/mobile/index.php"
@@ -233,7 +290,7 @@ class DiscuzSentinel:
     # ================= 钉钉专用：全能外链上传 =================
     def _universal_upload_for_dingtalk(self, img_url: str) -> str:
         """
-        全能上传：Catbox.moe (强力) -> CF Imgur模式 -> CF Telegraph模式
+        上传到自建图床：http://frp-cup.com:12245/upload/upload.html
         """
         try:
             headers = {"Referer": BASE_URL + "/", "User-Agent": self.session.headers.get("User-Agent")}
@@ -243,33 +300,52 @@ class DiscuzSentinel:
             img_content = r.content
         except: return img_url
 
+        # 确定MIME类型和扩展名
         mime = 'image/jpeg'
         ext = '.jpg'
         if img_content.startswith(b'\x89PNG'): mime, ext = 'image/png', '.png'
         elif img_content.startswith(b'GIF8'): mime, ext = 'image/gif', '.gif'
         filename = f"img_{int(time.time())}_{random.randint(100,999)}{ext}"
 
-        # 1. Catbox
+        # 自建图床上传
         try:
-            files = {'fileToUpload': (filename, img_content, mime)}
-            res = requests.post("https://catbox.moe/user/api.php", data={'reqtype': 'fileupload'}, files=files, timeout=30)
-            if res.status_code == 200 and res.text.startswith("http"):
-                self.logger.info(f"✅ [钉钉] Catbox 上传: {res.text.strip()}")
-                return res.text.strip()
-        except: pass
+            upload_url = "http://frp-cup.com:12245/upload/upload.html"
 
-        # 2. CF Pages
-        if ZYCS_IMG_HOST:
-            try:
-                # Imgur Mode
-                upload_url = ZYCS_IMG_HOST.rstrip('/') + "/upload"
-                files = {'image': (filename, img_content, mime)}
-                res = requests.post(upload_url, headers={'Authorization': 'Client-ID 546c25a59c58ad7'}, files=files, data={'type': 'file'}, timeout=15)
-                if res.status_code == 200:
-                    link = res.json().get('data', {}).get('link')
-                    if link: return link
-            except: pass
-            
+            # 构建multipart/form-data
+            files = {'image': (filename, img_content, mime)}
+
+            # 设置请求头
+            headers = {
+                'Accept': 'application/json, text/javascript, */*; q=0.01',
+                'Accept-Language': 'en-US,en;q=0.9,zh-HK;q=0.8,zh-CN;q=0.7,zh;q=0.6',
+                'Connection': 'keep-alive',
+                'Origin': 'http://frp-cup.com:12245',
+                'Referer': 'http://frp-cup.com:12245/',
+                'User-Agent': self.session.headers.get("User-Agent"),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+
+            # 发送上传请求（允许不安全的SSL证书）
+            res = requests.post(upload_url, files=files, headers=headers, timeout=30, verify=False)
+
+            if res.status_code == 200:
+                try:
+                    data = res.json()
+                    if data.get('code') == 200 and 'data' in data:
+                        img_url_result = data['data'].get('url')
+                        if img_url_result:
+                            # URL中的\/需要转义
+                            final_url = img_url_result.replace('\\/', '/')
+                            self.logger.info(f"✅ [自建图床] 上传成功: {final_url}")
+                            return final_url
+                except Exception as e:
+                    self.logger.warning(f"[自建图床] 解析响应失败: {e}")
+                    return img_url
+
+        except Exception as e:
+            self.logger.error(f"[自建图床] 上传异常: {e}")
+
+        # 上传失败，返回原链接
         return img_url
 
     # ================= 飞书专用：获取Token并上传 =================

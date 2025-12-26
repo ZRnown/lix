@@ -1,0 +1,227 @@
+2025-12-25 13:08:20,548 - INFO - 状态文件不存在，创建新状态
+2025-12-25 13:08:20,549 - INFO - ✅ 钉钉 Webhook 已配置
+2025-12-25 13:08:20,549 - INFO - ✅ 配置检查通过
+2025-12-25 13:08:20,549 - INFO - ==================================================
+2025-12-25 13:08:20,549 - INFO - DiscuzSentinel 启动
+2025-12-25 13:08:20,549 - INFO - 监控驿站: [147, 148]
+2025-12-25 13:08:20,549 - INFO - ==================================================
+2025-12-25 13:08:20,549 - INFO - 开始监控 FID 147，当前 last_pid: 0
+2025-12-25 13:08:21,498 - INFO - 收到中断信号，正在退出...
+2025-12-25 13:08:46,881 - INFO - 状态文件不存在，创建新状态
+2025-12-25 13:08:46,881 - INFO - ✅ 钉钉 Webhook 已配置
+2025-12-25 13:08:46,881 - INFO - ✅ 配置检查通过
+2025-12-25 13:08:46,882 - INFO - ==================================================
+2025-12-25 13:08:46,882 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 13:08:46,882 - INFO - ==================================================
+2025-12-25 13:08:46,882 - INFO - 监控 FID 147 (last_pid: 0)
+2025-12-25 13:08:49,678 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 13:08:49,681 - INFO - 钉钉推送：检测到 2 张图片，开始免费转存...
+2025-12-25 13:08:53,535 - WARNING - [ZYCS_IMG_HOST] 上传返回 400+，响应：{"status":400,"success":false,"data":{"error":"We don't support that file type!","request":"/3/upload?client_id=546c25a59c58ad7","method":"POST"}}
+
+2025-12-25 13:08:57,234 - WARNING - [ZYCS_IMG_HOST] 上传返回 400+，响应：{"status":400,"success":false,"data":{"error":"We don't support that file type!","request":"/3/upload?client_id=546c25a59c58ad7","method":"POST"}}
+
+2025-12-25 13:08:57,932 - INFO - 钉钉推送成功 (包含转存图片)
+2025-12-25 13:14:44,006 - INFO - 状态文件不存在，创建新状态
+2025-12-25 13:14:44,006 - INFO - ✅ 钉钉 Webhook 已配置
+2025-12-25 13:14:44,006 - INFO - ✅ 配置检查通过
+2025-12-25 13:14:44,006 - INFO - ==================================================
+2025-12-25 13:14:44,006 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 13:14:44,006 - INFO - ==================================================
+2025-12-25 13:14:44,006 - INFO - 监控 FID 147 (last_pid: 0)
+2025-12-25 13:14:44,317 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 13:14:44,330 - INFO - 钉钉推送：检测到 2 张图片，开始免费转存...
+2025-12-25 13:14:48,308 - WARNING - [ZYCS_IMG_HOST] 上传失败 code=400, msg={"status":400,"success":false,"data":{"error":"We don't support that file type!","request":"/3/uploa
+2025-12-25 13:18:20,659 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 13:18:22,471 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 13:18:22,662 - INFO - 正在直接推送 2 张图片...
+2025-12-25 13:18:24,176 - WARNING - 图片发送失败: {"errcode":460101,"errmsg":"错误描述: body 大小不合法;解决方案:请保持大小在 20000bytes 以内;"}
+2025-12-25 13:18:26,486 - WARNING - 图片发送失败: {"errcode":460101,"errmsg":"错误描述: body 大小不合法;解决方案:请保持大小在 20000bytes 以内;"}
+2025-12-25 13:18:27,494 - INFO - 已推送 PID 219718527
+2025-12-25 13:21:07,355 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 13:21:08,397 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 13:21:10,738 - INFO - 已推送 PID 219718545
+2025-12-25 13:21:12,750 - INFO - 检测到 23 张图片，正在上传到公共图床...
+2025-12-25 13:21:17,490 - ERROR - 图床上传异常: HTTPSConnectionPool(host='img.vim-cn.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1016)')))
+2025-12-25 13:21:20,586 - ERROR - 图床上传异常: HTTPSConnectionPool(host='img.vim-cn.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1016)')))
+2025-12-25 13:24:29,792 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 13:24:30,419 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 13:24:30,423 - INFO - 检测到 23 张图片，正在上传到 CF 图床...
+2025-12-25 13:24:33,203 - WARNING - 图床上传失败 400: {"status":400,"success":false,"data":{"error":"We don't support that file type!","request":"/3/uploa
+2025-12-25 13:24:36,916 - WARNING - 图床上传失败 400: {"status":400,"success":false,"data":{"error":"We don't support that file type!","request":"/3/uploa
+2025-12-25 13:26:26,853 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 13:26:27,193 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 13:26:27,194 - INFO - 检测到 23 张图片，正在上传到 CF 图床...
+2025-12-25 13:26:33,797 - WARNING - 图床上传均失败，使用原图链接
+2025-12-25 13:26:39,918 - WARNING - 图床上传均失败，使用原图链接
+2025-12-25 13:36:57,822 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 13:36:58,632 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 13:36:58,635 - INFO - 检测到 23 张图片，正在上传...
+2025-12-25 13:37:02,743 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/p7ptxm.jpg
+2025-12-25 13:37:07,686 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/t1lfq0.jpg
+2025-12-25 13:37:11,965 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/tqrqb1.jpg
+2025-12-25 13:37:16,932 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 13:37:19,675 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 13:37:23,636 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/9csmya.jpg
+2025-12-25 13:37:27,559 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 13:37:33,261 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/86iq2p.jpg
+2025-12-25 13:37:38,501 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/v32gqz.jpg
+2025-12-25 13:37:40,865 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 13:37:45,679 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/3j70mt.jpg
+2025-12-25 13:37:50,811 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/nj56uj.jpg
+2025-12-25 13:37:55,998 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/4973o3.jpg
+2025-12-25 13:37:58,267 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 13:38:02,898 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/g18cmu.jpg
+2025-12-25 13:38:07,753 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/rcp9nt.jpg
+2025-12-25 13:38:10,403 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 13:38:15,025 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/x95n1o.jpg
+2025-12-25 13:38:20,364 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/sbla39.jpg
+2025-12-25 13:38:25,148 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/eamdqp.jpg
+2025-12-25 13:38:29,178 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 13:38:34,366 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/q2jpwg.jpg
+2025-12-25 13:38:40,208 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/3pimo4.jpg
+2025-12-25 13:38:43,908 - INFO - 已推送 PID 219718553
+2025-12-25 13:38:45,917 - INFO - 检测到 2 张图片，正在上传...
+2025-12-25 13:39:19,471 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/qhrabz.png
+2025-12-25 13:39:25,631 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/fz2t22.jpg
+2025-12-25 13:39:26,892 - INFO - 已推送 PID 219718573
+2025-12-25 13:39:31,622 - INFO - 已推送 PID 219718585
+2025-12-25 13:39:33,824 - INFO - 已推送 PID 219718588
+2025-12-25 13:39:36,035 - INFO - 已推送 PID 219718591
+2025-12-25 13:39:38,210 - INFO - 已推送 PID 219718592
+2025-12-25 13:39:40,217 - INFO - 检测到 1 张图片，正在上传...
+2025-12-25 13:39:43,176 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wet63s.jpg
+2025-12-25 13:39:44,103 - INFO - 已推送 PID 219719493
+2025-12-25 13:39:46,290 - INFO - 已推送 PID 219719506
+2025-12-25 13:39:48,467 - INFO - 已推送 PID 219720336
+2025-12-25 13:39:50,732 - INFO - 已推送 PID 219720407
+2025-12-25 13:39:52,923 - INFO - 已推送 PID 219720411
+2025-12-25 13:39:55,104 - INFO - 已推送 PID 219720427
+2025-12-25 13:39:57,272 - INFO - 已推送 PID 219720554
+2025-12-25 13:39:59,280 - INFO - 检测到 3 张图片，正在上传...
+2025-12-25 13:40:01,296 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/mr9fxe.jpg
+2025-12-25 13:40:03,773 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/hiz2b0.jpg
+2025-12-25 13:40:08,016 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r9l266.jpg
+2025-12-25 13:40:09,623 - INFO - 已推送 PID 219720666
+2025-12-25 13:40:11,797 - INFO - 已推送 PID 219720869
+2025-12-25 13:40:13,800 - INFO - 检测到 11 张图片，正在上传...
+2025-12-25 13:40:17,725 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/0doqyx.jpg
+2025-12-25 14:02:31,219 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 14:03:07,786 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 14:03:11,740 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 14:03:11,741 - INFO - 检测到 2 张图片，正在上传(钉钉)...
+2025-12-25 14:03:16,877 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/iizx69.jpg
+2025-12-25 14:03:23,031 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/pnvrss.jpg
+2025-12-25 14:03:25,163 - INFO - 检测到 2 张图片，正在上传(飞书)...
+2025-12-25 14:03:29,225 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/iizx69.jpg
+2025-12-25 14:03:33,141 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/pnvrss.jpg
+2025-12-25 14:03:34,131 - INFO - 已推送 PID 219718527
+2025-12-25 14:03:56,052 - INFO - 已推送 PID 219718545
+2025-12-25 14:03:58,065 - INFO - 检测到 23 张图片，正在上传(钉钉)...
+2025-12-25 14:04:17,287 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/t1lfq0.jpg
+2025-12-25 14:04:21,671 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/tqrqb1.jpg
+2025-12-25 14:04:26,030 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 14:04:28,595 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 14:04:31,872 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/9csmya.jpg
+2025-12-25 14:04:35,863 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 14:04:39,942 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/86iq2p.jpg
+2025-12-25 14:04:43,650 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/v32gqz.jpg
+2025-12-25 14:04:46,393 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 14:04:51,173 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/3j70mt.jpg
+2025-12-25 14:04:54,969 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/nj56uj.jpg
+2025-12-25 14:04:59,089 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/4973o3.jpg
+2025-12-25 14:05:01,634 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 14:05:05,280 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/g18cmu.jpg
+2025-12-25 14:05:08,876 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/rcp9nt.jpg
+2025-12-25 14:05:11,244 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 14:05:15,169 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/x95n1o.jpg
+2025-12-25 14:05:18,688 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/sbla39.jpg
+2025-12-25 14:05:22,512 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/eamdqp.jpg
+2025-12-25 14:05:26,316 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 14:05:29,851 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/q2jpwg.jpg
+2025-12-25 14:05:33,742 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/3pimo4.jpg
+2025-12-25 14:05:38,418 - INFO - 检测到 23 张图片，正在上传(飞书)...
+2025-12-25 14:05:41,653 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/p7ptxm.jpg
+2025-12-25 14:05:45,456 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/t1lfq0.jpg
+2025-12-25 14:05:50,367 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/tqrqb1.jpg
+2025-12-25 14:08:00,960 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 14:08:12,365 - INFO - FID 147: 发现 24 条新内容
+2025-12-25 14:08:12,370 - INFO - 检测到 23 张图片，开始统一上传...
+2025-12-25 14:08:15,430 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/p7ptxm.jpg
+2025-12-25 14:08:19,468 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/t1lfq0.jpg
+2025-12-25 14:08:22,730 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/tqrqb1.jpg
+2025-12-25 14:08:26,504 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 14:08:29,514 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 14:08:33,518 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/9csmya.jpg
+2025-12-25 14:08:37,411 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 14:08:41,064 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/86iq2p.jpg
+2025-12-25 14:08:44,612 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/v32gqz.jpg
+2025-12-25 14:08:50,894 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 14:08:54,720 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/3j70mt.jpg
+2025-12-25 14:08:58,429 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/nj56uj.jpg
+2025-12-25 14:09:03,625 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/4973o3.jpg
+2025-12-25 14:09:06,788 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 14:09:11,994 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/g18cmu.jpg
+2025-12-25 14:09:17,357 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/rcp9nt.jpg
+2025-12-25 14:09:26,980 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/r5spgh.gif
+2025-12-25 14:09:30,973 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/x95n1o.jpg
+2025-12-25 14:09:34,717 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/sbla39.jpg
+2025-12-25 14:09:38,818 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/eamdqp.jpg
+2025-12-25 14:09:42,462 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wfk2rq.jpg
+2025-12-25 14:09:46,215 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/q2jpwg.jpg
+2025-12-25 14:09:50,332 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/3pimo4.jpg
+2025-12-25 14:09:55,011 - INFO - 已推送 PID 219718553
+2025-12-25 14:09:57,016 - INFO - 检测到 2 张图片，开始统一上传...
+2025-12-25 14:10:16,910 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/fz2t22.jpg
+2025-12-25 14:10:19,130 - INFO - 已推送 PID 219718573
+2025-12-25 14:10:37,108 - INFO - 已推送 PID 219718585
+2025-12-25 14:10:40,244 - INFO - 已推送 PID 219718588
+2025-12-25 14:10:43,376 - INFO - 已推送 PID 219718591
+2025-12-25 14:10:46,531 - INFO - 已推送 PID 219718592
+2025-12-25 14:10:48,537 - INFO - 检测到 1 张图片，开始统一上传...
+2025-12-25 14:10:50,606 - INFO - ✅ Catbox 上传成功: https://files.catbox.moe/wet63s.jpg
+2025-12-25 14:10:52,963 - INFO - 已推送 PID 219719493
+2025-12-25 14:10:56,104 - INFO - 已推送 PID 219719506
+2025-12-25 14:10:59,251 - INFO - 已推送 PID 219720336
+2025-12-25 14:11:02,420 - INFO - 已推送 PID 219720407
+2025-12-25 14:11:05,611 - INFO - 已推送 PID 219720411
+2025-12-25 14:11:08,714 - INFO - 已推送 PID 219720427
+2025-12-25 14:11:11,846 - INFO - 已推送 PID 219720554
+2025-12-25 14:55:32,877 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-25 14:55:34,199 - INFO - FID 147: 发现 27 条新内容
+2025-12-25 14:55:34,200 - INFO - 钉钉：正在处理 3 张图片...
+2025-12-25 14:55:37,091 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/mr9fxe.jpg
+2025-12-25 14:55:39,380 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/hiz2b0.jpg
+2025-12-25 14:55:43,468 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/r9l266.jpg
+2025-12-25 14:55:46,102 - INFO - 飞书：正在处理 3 张图片...
+2025-12-25 14:55:46,933 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_986bcc22-4d07-45b8-b5c2-4c1bc844fa9g
+2025-12-25 14:55:47,919 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_b5b6fa03-4cd5-4e50-b47e-bff3057e769g
+2025-12-25 14:55:48,964 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_44bfdb45-ada0-44c2-abd3-2758d164055g
+2025-12-25 14:55:49,967 - INFO - 已推送 PID 219720666
+2025-12-25 14:55:54,280 - INFO - 已推送 PID 219720869
+2025-12-25 14:55:56,289 - INFO - 钉钉：正在处理 11 张图片...
+2025-12-25 14:55:59,589 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/0doqyx.jpg
+2025-12-25 14:56:02,588 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/s1z8ea.jpg
+2025-12-25 14:56:09,066 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/bytxvq.jpg
+2025-12-25 14:56:13,626 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/wqwvhz.jpg
+2025-12-25 14:56:19,439 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/enlnd8.jpg
+2025-12-25 14:56:24,313 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/2c96xb.jpg
+2025-12-25 14:56:27,851 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/p7ptxm.jpg
+2025-12-25 14:56:31,585 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/t1lfq0.jpg
+2025-12-25 14:56:36,352 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/ijuby9.jpg
+2025-12-25 14:56:40,160 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/366r2x.jpg
+2025-12-25 14:56:45,682 - INFO - ✅ [钉钉] Catbox 上传: https://files.catbox.moe/sa5884.jpg
+2025-12-25 14:56:49,216 - INFO - 飞书：正在处理 11 张图片...
+2025-12-25 14:56:50,682 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_a3ba2fdb-32a2-48c0-a6c1-843f358399fg
+2025-12-25 14:56:52,005 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_c75d7c65-7c5b-4edb-bc1b-99f1fe14c25g
+2025-12-25 14:56:54,687 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_e8c160e7-0c80-4e03-8831-95f575d68d0g
+2025-12-25 14:56:56,576 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_97324ff6-b82b-48be-b7da-9123a22459cg
+2025-12-25 14:56:58,651 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_1fb732ea-2bf8-4cb5-a12d-079dc099826g
+2025-12-25 14:57:01,127 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_03f8458f-a3f5-4a91-970b-844435b5900g
+2025-12-25 14:57:03,041 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_f7eb2a11-d342-42ec-92dd-dd242f8b1e6g
+2025-12-25 14:57:05,577 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_7e025ecb-5bdf-4881-a080-8aa79f8e245g
+2025-12-25 14:57:07,469 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_1ee148b8-964b-4e10-8a56-49f38ede726g
+2025-12-25 14:57:09,487 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_72270751-4e94-4049-bf35-e5f4129cf13g
+2025-12-25 14:57:11,937 - INFO - ✅ [飞书] 原生上传成功 key: img_v3_02ta_58d8f374-1cde-4805-ad50-08bb5f99b8bg
+2025-12-25 14:57:12,935 - INFO - 已推送 PID 219722116
+2025-12-25 14:57:16,577 - INFO - 已推送 PID 219724145
+2025-12-25 14:57:20,166 - INFO - 已推送 PID 219724146
