@@ -307,43 +307,76 @@ class DiscuzSentinel:
         elif img_content.startswith(b'GIF8'): mime, ext = 'image/gif', '.gif'
         filename = f"img_{int(time.time())}_{random.randint(100,999)}{ext}"
 
-        # 自建图床上传
-        try:
-            upload_url = "http://frp-cup.com:12245/upload/upload.html"
+        # 自建图床上传（优化版，适配国内网络环境）
+        for attempt in range(3):  # 最多重试3次
+            try:
+                upload_url = "http://frp-cup.com:12245/upload/upload.html"
 
-            # 构建multipart/form-data
-            files = {'image': (filename, img_content, mime)}
+                # 构建multipart/form-data
+                files = {'image': (filename, img_content, mime)}
 
-            # 设置请求头
-            headers = {
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
-                'Accept-Language': 'en-US,en;q=0.9,zh-HK;q=0.8,zh-CN;q=0.7,zh;q=0.6',
-                'Connection': 'keep-alive',
-                'Origin': 'http://frp-cup.com:12245',
-                'Referer': 'http://frp-cup.com:12245/',
-                'User-Agent': self.session.headers.get("User-Agent"),
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+                # 设置请求头（适配国内网络环境）
+                headers = {
+                    'Accept': 'application/json, text/javascript, */*; q=0.01',
+                    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',  # 调整语言优先级
+                    'Connection': 'keep-alive',
+                    'Origin': 'http://frp-cup.com:12245',
+                    'Referer': 'http://frp-cup.com:12245/',
+                    # 使用更通用的User-Agent，避免触发反爬虫
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': None  # 让requests自动设置multipart边界
+                }
 
-            # 发送上传请求（允许不安全的SSL证书）
-            res = requests.post(upload_url, files=files, headers=headers, timeout=30, verify=False)
+                self.logger.debug(f"[自建图床] 尝试上传 {filename} (尝试 {attempt + 1}/3)")
 
-            if res.status_code == 200:
-                try:
-                    data = res.json()
-                    if data.get('code') == 200 and 'data' in data:
-                        img_url_result = data['data'].get('url')
-                        if img_url_result:
-                            # URL中的\/需要转义
-                            final_url = img_url_result.replace('\\/', '/')
-                            self.logger.info(f"✅ [自建图床] 上传成功: {final_url}")
-                            return final_url
-                except Exception as e:
-                    self.logger.warning(f"[自建图床] 解析响应失败: {e}")
-                    return img_url
+                # 发送上传请求（增加超时时间，禁用SSL验证）
+                upload_timeout = 60 if attempt == 0 else 45  # 逐渐减少超时时间
+                res = requests.post(
+                    upload_url,
+                    files=files,
+                    headers=headers,
+                    timeout=upload_timeout,
+                    verify=False,
+                    allow_redirects=True
+                )
 
-        except Exception as e:
-            self.logger.error(f"[自建图床] 上传异常: {e}")
+                # 检查响应
+                if res.status_code == 200:
+                    try:
+                        data = res.json()
+                        if data.get('code') == 200 and 'data' in data:
+                            img_url_result = data['data'].get('url')
+                            if img_url_result:
+                                # URL中的\/需要转义
+                                final_url = img_url_result.replace('\\/', '/')
+                                self.logger.info(f"✅ [自建图床] 上传成功: {final_url}")
+                                return final_url
+                        else:
+                            self.logger.warning(f"[自建图床] API响应错误: {data}")
+                    except json.JSONDecodeError as e:
+                        self.logger.warning(f"[自建图床] 响应不是有效JSON: {e}")
+                        self.logger.debug(f"[自建图床] 响应内容: {res.text[:200]}")
+                else:
+                    self.logger.warning(f"[自建图床] HTTP {res.status_code} 错误")
+
+            except requests.exceptions.ConnectionError as e:
+                if "RemoteDisconnected" in str(e) or "Connection aborted" in str(e):
+                    self.logger.warning(f"[自建图床] 连接被服务器断开 (尝试 {attempt + 1}/3): {e}")
+                else:
+                    self.logger.warning(f"[自建图床] 连接错误 (尝试 {attempt + 1}/3): {e}")
+            except requests.exceptions.Timeout as e:
+                self.logger.warning(f"[自建图床] 请求超时 ({upload_timeout}s) (尝试 {attempt + 1}/3): {e}")
+            except requests.exceptions.RequestException as e:
+                self.logger.warning(f"[自建图床] 网络请求异常 (尝试 {attempt + 1}/3): {e}")
+            except Exception as e:
+                self.logger.error(f"[自建图床] 未知异常 (尝试 {attempt + 1}/3): {e}")
+
+            # 如果不是最后一次尝试，等待后重试
+            if attempt < 2:
+                retry_delay = 2 * (attempt + 1)  # 2秒, 4秒
+                self.logger.info(f"[自建图床] {retry_delay} 秒后重试...")
+                time.sleep(retry_delay)
 
         # 上传失败，返回原链接
         return img_url
