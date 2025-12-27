@@ -291,14 +291,35 @@ class DiscuzSentinel:
     def _universal_upload_for_dingtalk(self, img_url: str) -> str:
         """
         上传到自建图床：http://frp-cup.com:12245/upload/upload.html
+        增加图片验证和错误处理
         """
         try:
             headers = {"Referer": BASE_URL + "/", "User-Agent": self.session.headers.get("User-Agent")}
             r = self.session.get(img_url, headers=headers, timeout=15)
-            if r.status_code != 200: return img_url
-            if len(r.content) < 100 or r.content.strip().startswith(b'<'): return img_url
+
+            if r.status_code != 200:
+                self.logger.warning(f"[图床] 下载图片失败: HTTP {r.status_code}")
+                return img_url
+
             img_content = r.content
-        except: return img_url
+
+            # 验证图片内容
+            if len(img_content) < 100:
+                self.logger.warning(f"[图床] 图片太小: {len(img_content)} bytes")
+                return img_url
+
+            if img_content.strip().startswith(b'<'):
+                self.logger.warning("[图床] 下载到的是HTML页面而不是图片")
+                return img_url
+
+            # 检查是否是有效的图片格式
+            if not self._is_valid_image(img_content):
+                self.logger.warning("[图床] 图片格式无效或损坏")
+                return img_url
+
+        except Exception as e:
+            self.logger.warning(f"[图床] 下载图片异常: {e}")
+            return img_url
 
         # 确定MIME类型和扩展名
         mime = 'image/jpeg'
@@ -353,7 +374,15 @@ class DiscuzSentinel:
                                 self.logger.info(f"✅ [自建图床] 上传成功: {final_url}")
                                 return final_url
                         else:
-                            self.logger.warning(f"[自建图床] API响应错误: {data}")
+                            # 特殊处理"非法图片文件"错误
+                            error_msg = data.get('error', '')
+                            if '非法图片文件' in error_msg:
+                                self.logger.warning(f"[自建图床] 服务器拒绝图片 (非法图片文件): {img_url}")
+                                self.logger.debug(f"[自建图床] 图片大小: {len(img_content)} bytes")
+                                # 对于非法图片文件，不再重试，直接返回原链接
+                                return img_url
+                            else:
+                                self.logger.warning(f"[自建图床] API响应错误: {data}")
                     except json.JSONDecodeError as e:
                         self.logger.warning(f"[自建图床] 响应不是有效JSON: {e}")
                         self.logger.debug(f"[自建图床] 响应内容: {res.text[:200]}")
@@ -372,14 +401,62 @@ class DiscuzSentinel:
             except Exception as e:
                 self.logger.error(f"[自建图床] 未知异常 (尝试 {attempt + 1}/3): {e}")
 
-            # 如果不是最后一次尝试，等待后重试
-            if attempt < 2:
+            # 只有在非"非法图片文件"错误时才重试
+            # 因为图片本身有问题，重试也没有意义
+            should_retry = True
+            if hasattr(res, 'status_code') and res.status_code == 200:
+                try:
+                    response_data = res.json()
+                    if response_data.get('error') == '非法图片文件':
+                        should_retry = False
+                        self.logger.info("[自建图床] 图片文件非法，跳过重试")
+                except:
+                    pass
+
+            if should_retry and attempt < 2:
                 retry_delay = 2 * (attempt + 1)  # 2秒, 4秒
                 self.logger.info(f"[自建图床] {retry_delay} 秒后重试...")
                 time.sleep(retry_delay)
+            elif not should_retry:
+                break  # 跳出重试循环
 
         # 上传失败，返回原链接
         return img_url
+
+    def _is_valid_image(self, image_data: bytes) -> bool:
+        """
+        验证图片数据是否有效
+        """
+        if not image_data or len(image_data) < 4:
+            return False
+
+        # 检查文件头标识
+        # PNG: \x89PNG
+        # JPEG: \xFF\xD8
+        # GIF: GIF8
+        # BMP: BM
+        # WebP: RIFF....WEBP
+
+        if image_data.startswith(b'\x89PNG'):
+            return True
+        elif image_data.startswith(b'\xFF\xD8'):
+            return True
+        elif image_data.startswith(b'GIF8'):
+            return True
+        elif image_data.startswith(b'BM'):
+            return True
+        elif len(image_data) > 12 and image_data.startswith(b'RIFF') and b'WEBP' in image_data[8:12]:
+            return True
+
+        # 检查是否包含HTML（下载失败的标志）
+        if b'<html' in image_data.lower() or b'<!DOCTYPE' in image_data.lower():
+            return False
+
+        # 检查是否是其他常见的图片格式或二进制数据
+        # 对于Discuz论坛的动态图片，可能不是标准格式但仍然有效
+        # 只要不是HTML/XML内容就可以尝试上传
+
+        return False
 
     # ================= 飞书专用：获取Token并上传 =================
     def _get_feishu_token(self) -> Optional[str]:
