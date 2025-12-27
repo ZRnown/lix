@@ -80,8 +80,6 @@ class DiscuzSentinel:
                 LOG_FILE, when="midnight", backupCount=LOG_RETENTION_DAYS, encoding='utf-8'
             )
             handlers.append(file_handler)
-        logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s', handlers=handlers)
-        self.logger = logging.getLogger(__name__)
 
     def _setup_session(self):
         self.session.headers.update({
@@ -148,11 +146,11 @@ class DiscuzSentinel:
                     return None
 
                 # 检查响应内容是否包含登录提示
-                response_text = response.text
+            response_text = response.text
                 if 'not_loggedin' in response_text:
                     self.logger.warning(f"FID {fid}: Cookie 可能已失效")
-                    return None
-
+                return None
+            
                 if '504 Gateway Time-out' in response_text:
                     self.logger.warning(f"FID {fid}: 响应内容显示网关超时")
                     if attempt < 2:
@@ -162,38 +160,38 @@ class DiscuzSentinel:
                     return None
 
                 # 尝试解析JSON
-                try:
-                    data = response.json()
-                except json.JSONDecodeError as e:
+            try:
+                data = response.json()
+            except json.JSONDecodeError as e:
                     self.logger.warning(f"FID {fid}: 响应不是有效JSON: {e}")
                     self.logger.debug(f"FID {fid}: 响应内容前200字符: {response_text[:200]}")
-                    return None
-
+                return None
+            
                 count = int(data.get('count', 0))
                 if count > 0:
-                    self.logger.info(f"FID {fid}: 发现 {count} 条新内容")
-                    return data
+            self.logger.info(f"FID {fid}: 发现 {count} 条新内容")
+            return data
                 else:
                     self.logger.debug(f"FID {fid}: 暂无新内容 (count={count})")
                     return None
-
-            except requests.exceptions.Timeout:
+            
+        except requests.exceptions.Timeout:
                 self.logger.warning(f"FID {fid}: 请求超时 (尝试 {attempt + 1}/3)")
                 if attempt < 2:
                     time.sleep(3)
                     continue
-                return None
+            return None
 
-            except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException as e:
                 self.logger.error(f"FID {fid}: 网络请求异常: {e}")
                 if attempt < 2:
                     time.sleep(3)
                     continue
-                return None
+            return None
 
-            except Exception as e:
+        except Exception as e:
                 self.logger.error(f"FID {fid}: 处理 livelastpost 时出现异常: {e}")
-                return None
+            return None
 
         return None
 
@@ -233,19 +231,19 @@ class DiscuzSentinel:
                 'url': f"{BASE_URL}/thread-{vars.get('thread', {}).get('tid', '')}-1-1.html"
             }
         except Exception:
-            return None
+        return None
 
     def _extract_from_livelastpost(self, post_item: Dict, fid: int) -> Optional[Dict]:
         text, images = self._clean_content(post_item.get('message', ''))
         tid = self._extract_tid_from_message(post_item.get('message', ''))
-        return {
+            return {
             'subject': text[:30] + '...' if text else '新动态',
             'author': post_item.get('author', '未知'),
             'time': post_item.get('dateline', ''),
             'content': text,
-            'images': images,
+                'images': images,
             'url': f"{BASE_URL}/thread-{tid}-1-1.html" if tid else f"{BASE_URL}/group-{fid}-1.html"
-        }
+            }
 
     def _get_web_content_fallback(self, tid: int, fid_hint: Optional[int]) -> Tuple[Optional[str], Optional[List[str]]]:
         url = f"{BASE_URL}/thread-{tid}-1-1.html"
@@ -330,6 +328,7 @@ class DiscuzSentinel:
 
         # 自建图床上传（优化版，适配国内网络环境）
         for attempt in range(3):  # 最多重试3次
+            res = None  # 初始化res变量，避免作用域问题
             try:
                 upload_url = "http://frp-cup.com:12245/upload/upload.html"
 
@@ -373,7 +372,7 @@ class DiscuzSentinel:
                                 final_url = img_url_result.replace('\\/', '/')
                                 self.logger.info(f"✅ [自建图床] 上传成功: {final_url}")
                                 return final_url
-                        else:
+        else:
                             # 特殊处理"非法图片文件"错误
                             error_msg = data.get('error', '')
                             if '非法图片文件' in error_msg:
@@ -390,12 +389,12 @@ class DiscuzSentinel:
                     self.logger.warning(f"[自建图床] HTTP {res.status_code} 错误")
 
             except requests.exceptions.ConnectionError as e:
-                if "RemoteDisconnected" in str(e) or "Connection aborted" in str(e):
+                if "RemoteDisconnected" in str(e) or "Connection aborted" in str(e) or "Connection reset by peer" in str(e):
                     self.logger.warning(f"[自建图床] 连接被服务器断开 (尝试 {attempt + 1}/3): {e}")
                 else:
                     self.logger.warning(f"[自建图床] 连接错误 (尝试 {attempt + 1}/3): {e}")
             except requests.exceptions.Timeout as e:
-                self.logger.warning(f"[自建图床] 请求超时 ({upload_timeout}s) (尝试 {attempt + 1}/3): {e}")
+                self.logger.warning(f"[自建图床] 请求超时 ({upload_timeout if 'upload_timeout' in locals() else 60}s) (尝试 {attempt + 1}/3): {e}")
             except requests.exceptions.RequestException as e:
                 self.logger.warning(f"[自建图床] 网络请求异常 (尝试 {attempt + 1}/3): {e}")
             except Exception as e:
@@ -404,7 +403,7 @@ class DiscuzSentinel:
             # 只有在非"非法图片文件"错误时才重试
             # 因为图片本身有问题，重试也没有意义
             should_retry = True
-            if hasattr(res, 'status_code') and res.status_code == 200:
+            if res and hasattr(res, 'status_code') and res.status_code == 200:
                 try:
                     response_data = res.json()
                     if response_data.get('error') == '非法图片文件':
@@ -438,7 +437,7 @@ class DiscuzSentinel:
         # WebP: RIFF....WEBP
 
         if image_data.startswith(b'\x89PNG'):
-            return True
+                    return True
         elif image_data.startswith(b'\xFF\xD8'):
             return True
         elif image_data.startswith(b'GIF8'):
@@ -456,7 +455,7 @@ class DiscuzSentinel:
         # 对于Discuz论坛的动态图片，可能不是标准格式但仍然有效
         # 只要不是HTML/XML内容就可以尝试上传
 
-        return False
+                return False
 
     # ================= 飞书专用：获取Token并上传 =================
     def _get_feishu_token(self) -> Optional[str]:
@@ -475,7 +474,7 @@ class DiscuzSentinel:
                 return self.feishu_token
         except Exception as e:
             self.logger.error(f"飞书 Token 获取失败: {e}")
-        return None
+            return None
 
     def _upload_to_feishu_server(self, img_url: str) -> Optional[str]:
         """
@@ -505,7 +504,7 @@ class DiscuzSentinel:
                 self.logger.warning(f"[飞书] 上传失败: {data}")
         except Exception as e:
             self.logger.error(f"[飞书] 上传异常: {e}")
-        return None
+            return None
 
     # ================= 发送逻辑 =================
 
@@ -541,7 +540,7 @@ class DiscuzSentinel:
             }
             requests.post(webhook_url, json=payload, timeout=10)
             return True
-        except Exception as e:
+            except Exception as e:
             self.logger.error(f"钉钉发送异常: {e}")
             return False
 
@@ -574,7 +573,7 @@ class DiscuzSentinel:
                             "alt": {"tag": "plain_text", "content": "图片"}
                         })
                     time.sleep(0.5)
-            else:
+        else:
                 # 方式B：没配置 AppID -> 使用 Catbox 外链 -> 显示为点击链接
                 # (因为飞书 Webhook 无法直接渲染外链图片)
                 for img_url in post_data['images']:
@@ -607,11 +606,11 @@ class DiscuzSentinel:
 
         try:
             requests.post(webhook_url, json=payload, timeout=10)
-            return True
+                return True
         except Exception as e:
             self.logger.error(f"飞书发送异常: {e}")
             return False
-
+    
     def run(self):
         self.logger.info(f"DiscuzSentinel 启动 | 监控: {TARGET_FIDS}")
         if not (FEISHU_APP_ID and FEISHU_APP_SECRET):
@@ -631,19 +630,19 @@ class DiscuzSentinel:
                         for item in sorted(data.get('list', []), key=lambda x: int(x.get('pid', 0))):
                             pid = int(item.get('pid', 0))
                             if pid <= max_pid:
-                                continue
-
+                    continue
+                
                             # 获取帖子数据
                             post_data = self._extract_from_livelastpost(item, fid)
                             tid = self._extract_tid_from_message(item.get('message', ''))
-                            if tid:
+                if tid:
                                 detail = self._get_thread_detail(tid, pid)
                                 if detail:
                                     extracted = self._extract_post_content(detail, pid)
                                     if extracted:
                                         post_data = extracted
 
-                            if post_data:
+                        if post_data:
                                 # 添加时间戳用于排序
                                 post_data['_timestamp'] = self._parse_timestamp(post_data.get('time', ''))
                                 post_data['_pid'] = pid
@@ -673,11 +672,11 @@ class DiscuzSentinel:
                                 self.logger.info(f"已推送 PID {pid} (时间: {post_data.get('time', '未知')})")
 
                                 # 推送间隔，避免触发限流
-                                time.sleep(1.5)
+            time.sleep(1.5)
 
-                            # 更新状态
+            # 更新状态
                             self.state.setdefault(fid, {})['last_pid'] = max_pid
-                            self._save_state()
+            self._save_state()
 
                     time.sleep(3)
                 time.sleep(random.randint(30, 60))
