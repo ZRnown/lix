@@ -1,0 +1,70 @@
+2025-12-26 00:00:01,746 - INFO - 本轮监控完成，休眠 49 秒...
+2025-12-26 00:00:50,763 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:00:58,801 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:01:01,805 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:01:09,878 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:01:12,884 - INFO - 本轮监控完成，休眠 56 秒...
+2025-12-26 00:02:08,887 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:02:16,928 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:02:19,929 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:02:29,946 - ERROR - FID 148: 请求超时
+2025-12-26 00:02:32,949 - INFO - 本轮监控完成，休眠 46 秒...
+2025-12-26 00:03:18,965 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:03:27,323 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:03:30,327 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:03:38,368 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:03:41,374 - INFO - 本轮监控完成，休眠 35 秒...
+2025-12-26 00:04:16,385 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:04:24,427 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:04:27,433 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:04:35,486 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:04:38,488 - INFO - 本轮监控完成，休眠 56 秒...
+2025-12-26 00:05:34,491 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:05:42,544 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:05:45,550 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:05:53,997 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:05:57,352 - INFO - 本轮监控完成，休眠 46 秒...
+2025-12-26 00:06:43,359 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:06:51,408 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:06:54,413 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:07:02,462 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:07:05,464 - INFO - 本轮监控完成，休眠 30 秒...
+2025-12-26 00:07:35,467 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:07:43,528 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:07:46,533 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:07:54,586 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:07:57,589 - INFO - 本轮监控完成，休眠 50 秒...
+2025-12-26 00:08:47,593 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:08:55,661 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:08:58,669 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:09:06,734 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:09:09,739 - INFO - 本轮监控完成，休眠 46 秒...
+2025-12-26 00:09:55,752 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:10:03,815 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:10:06,820 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:10:14,876 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:10:17,880 - INFO - 本轮监控完成，休眠 58 秒...
+2025-12-26 00:11:15,883 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:11:23,934 - ERROR - FID 147: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343
+2025-12-26 00:11:26,937 - INFO - 开始监控 FID 148，当前 last_pid: 0
+2025-12-26 00:11:34,991 - ERROR - FID 148: 请求失败: 504 Server Error: Gateway Time-out for url: https://www.55188.com/forum.php?mod=misc&action=livelastpost&type=post&fid=148&postid=0
+2025-12-26 00:11:38,884 - INFO - 本轮监控完成，休眠 31 秒...
+2025-12-26 00:12:09,946 - INFO - 开始监控 FID 147，当前 last_pid: 219725343
+2025-12-26 00:12:09,966 - ERROR - FID 147: 请求失败: HTTPSConnectionPool(host='www.55188.com', port=443): Max retries exceeded with url: /forum.php?mod=misc&action=livelastpost&type=post&fid=147&postid=219725343 (Caused by ProxyError('Unable to connect to proxy', NewConnectionError("HTTPSConnection(host='127.0.0.1', port=7897): Failed to establish a new connection: [Errno 61] Connection refused")))
+2025-12-26 17:26:20,027 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-26 17:26:35,737 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-26 17:26:43,719 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-26 17:27:51,073 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-26 17:27:59,233 - WARNING - FID 147: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中
+2025-12-26 17:27:59,234 - INFO - FID 147: 5 秒后重试...
+2025-12-26 17:29:22,854 - INFO - DiscuzSentinel 启动 | 监控: [147, 148]
+2025-12-26 17:29:31,022 - WARNING - FID 147: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中
+2025-12-26 17:29:31,023 - INFO - FID 147: 5 秒后重试...
+2025-12-26 17:29:44,065 - WARNING - FID 147: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中
+2025-12-26 17:29:44,066 - INFO - FID 147: 10 秒后重试...
+2025-12-26 17:30:02,113 - WARNING - FID 147: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中
+2025-12-26 17:30:13,159 - WARNING - FID 148: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中
+2025-12-26 17:30:13,160 - INFO - FID 148: 5 秒后重试...
+2025-12-26 17:30:26,214 - WARNING - FID 148: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中
+2025-12-26 17:30:26,216 - INFO - FID 148: 10 秒后重试...
+2025-12-26 17:30:44,266 - WARNING - FID 148: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中
