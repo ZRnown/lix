@@ -64,6 +64,8 @@ LOG_RETENTION_DAYS = 7
 
 class DiscuzSentinel:
     def __init__(self):
+        self.logger = logging.getLogger("DiscuzSentinel")
+        self.logger.setLevel(LOG_LEVEL)
         self._setup_logging()
         self.session = requests.Session()
         self.state = self._load_state()
@@ -79,7 +81,13 @@ class DiscuzSentinel:
             file_handler = TimedRotatingFileHandler(
                 LOG_FILE, when="midnight", backupCount=LOG_RETENTION_DAYS, encoding='utf-8'
             )
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
             handlers.append(file_handler)
+        
+        for handler in handlers:
+            self.logger.addHandler(handler)
+
+    def _setup_session(self):
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -144,10 +152,10 @@ class DiscuzSentinel:
                     return None
 
                 # 检查响应内容是否包含登录提示
-            response_text = response.text
+                response_text = response.text
                 if 'not_loggedin' in response_text:
                     self.logger.warning(f"FID {fid}: Cookie 可能已失效")
-                return None
+                    return None
             
                 if '504 Gateway Time-out' in response_text:
                     self.logger.warning(f"FID {fid}: 响应内容显示网关超时")
@@ -158,38 +166,38 @@ class DiscuzSentinel:
                     return None
 
                 # 尝试解析JSON
-            try:
-                data = response.json()
-            except json.JSONDecodeError as e:
+                try:
+                    data = response.json()
+                except json.JSONDecodeError as e:
                     self.logger.warning(f"FID {fid}: 响应不是有效JSON: {e}")
                     self.logger.debug(f"FID {fid}: 响应内容前200字符: {response_text[:200]}")
-                return None
+                    return None
             
                 count = int(data.get('count', 0))
                 if count > 0:
-            self.logger.info(f"FID {fid}: 发现 {count} 条新内容")
-            return data
+                    self.logger.info(f"FID {fid}: 发现 {count} 条新内容")
+                    return data
                 else:
                     self.logger.debug(f"FID {fid}: 暂无新内容 (count={count})")
                     return None
             
-        except requests.exceptions.Timeout:
+            except requests.exceptions.Timeout:
                 self.logger.warning(f"FID {fid}: 请求超时 (尝试 {attempt + 1}/3)")
                 if attempt < 2:
                     time.sleep(3)
                     continue
-            return None
+                return None
 
-        except requests.exceptions.RequestException as e:
+            except requests.exceptions.RequestException as e:
                 self.logger.error(f"FID {fid}: 网络请求异常: {e}")
                 if attempt < 2:
                     time.sleep(3)
                     continue
-            return None
+                return None
 
-        except Exception as e:
+            except Exception as e:
                 self.logger.error(f"FID {fid}: 处理 livelastpost 时出现异常: {e}")
-            return None
+                return None
 
         return None
 
@@ -229,19 +237,19 @@ class DiscuzSentinel:
                 'url': f"{BASE_URL}/thread-{vars.get('thread', {}).get('tid', '')}-1-1.html"
             }
         except Exception:
-        return None
+            return None
 
     def _extract_from_livelastpost(self, post_item: Dict, fid: int) -> Optional[Dict]:
         text, images = self._clean_content(post_item.get('message', ''))
         tid = self._extract_tid_from_message(post_item.get('message', ''))
-            return {
+        return {
             'subject': text[:30] + '...' if text else '新动态',
             'author': post_item.get('author', '未知'),
             'time': post_item.get('dateline', ''),
             'content': text,
-                'images': images,
+            'images': images,
             'url': f"{BASE_URL}/thread-{tid}-1-1.html" if tid else f"{BASE_URL}/group-{fid}-1.html"
-            }
+        }
 
     def _get_web_content_fallback(self, tid: int, fid_hint: Optional[int]) -> Tuple[Optional[str], Optional[List[str]]]:
         url = f"{BASE_URL}/thread-{tid}-1-1.html"
@@ -370,7 +378,7 @@ class DiscuzSentinel:
                                 final_url = img_url_result.replace('\\/', '/')
                                 self.logger.info(f"✅ [自建图床] 上传成功: {final_url}")
                                 return final_url
-        else:
+                        else:
                             # 特殊处理"非法图片文件"错误
                             error_msg = data.get('error', '')
                             if '非法图片文件' in error_msg:
@@ -435,7 +443,7 @@ class DiscuzSentinel:
         # WebP: RIFF....WEBP
 
         if image_data.startswith(b'\x89PNG'):
-                    return True
+            return True
         elif image_data.startswith(b'\xFF\xD8'):
             return True
         elif image_data.startswith(b'GIF8'):
@@ -453,7 +461,7 @@ class DiscuzSentinel:
         # 对于Discuz论坛的动态图片，可能不是标准格式但仍然有效
         # 只要不是HTML/XML内容就可以尝试上传
 
-                return False
+        return False
 
     # ================= 飞书专用：获取Token并上传 =================
     def _get_feishu_token(self) -> Optional[str]:
@@ -538,7 +546,7 @@ class DiscuzSentinel:
             }
             requests.post(webhook_url, json=payload, timeout=10)
             return True
-            except Exception as e:
+        except Exception as e:
             self.logger.error(f"钉钉发送异常: {e}")
             return False
 
@@ -571,7 +579,7 @@ class DiscuzSentinel:
                             "alt": {"tag": "plain_text", "content": "图片"}
                         })
                     time.sleep(0.5)
-        else:
+            else:
                 # 方式B：没配置 AppID -> 使用 Catbox 外链 -> 显示为点击链接
                 # (因为飞书 Webhook 无法直接渲染外链图片)
                 for img_url in post_data['images']:
@@ -604,7 +612,7 @@ class DiscuzSentinel:
 
         try:
             requests.post(webhook_url, json=payload, timeout=10)
-                return True
+            return True
         except Exception as e:
             self.logger.error(f"飞书发送异常: {e}")
             return False
@@ -628,19 +636,19 @@ class DiscuzSentinel:
                         for item in sorted(data.get('list', []), key=lambda x: int(x.get('pid', 0))):
                             pid = int(item.get('pid', 0))
                             if pid <= max_pid:
-                    continue
+                                continue
                 
                             # 获取帖子数据
                             post_data = self._extract_from_livelastpost(item, fid)
                             tid = self._extract_tid_from_message(item.get('message', ''))
-                if tid:
+                            if tid:
                                 detail = self._get_thread_detail(tid, pid)
                                 if detail:
                                     extracted = self._extract_post_content(detail, pid)
                                     if extracted:
                                         post_data = extracted
 
-                        if post_data:
+                            if post_data:
                                 # 添加时间戳用于排序
                                 post_data['_timestamp'] = self._parse_timestamp(post_data.get('time', ''))
                                 post_data['_pid'] = pid
@@ -670,11 +678,11 @@ class DiscuzSentinel:
                                 self.logger.info(f"已推送 PID {pid} (时间: {post_data.get('time', '未知')})")
 
                                 # 推送间隔，避免触发限流
-            time.sleep(1.5)
+                                time.sleep(1.5)
 
-            # 更新状态
-                            self.state.setdefault(fid, {})['last_pid'] = max_pid
-            self._save_state()
+                        # 更新状态
+                        self.state.setdefault(fid, {})['last_pid'] = max_pid
+                        self._save_state()
 
                     time.sleep(3)
                 time.sleep(random.randint(30, 60))
