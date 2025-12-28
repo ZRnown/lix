@@ -1,8 +1,8 @@
 {
     "global": {
       "cookie": "Hm_lvt_0233b908b2bf29bfd788abd7ee3556da=1763517770,1764552445,1764807847,1764810968; vOVx_56cc_saltkey=d8XtRZEA; vOVx_56cc_lastvisit=1766713860; 55188_passport=wx2RivGvhymBb8dDciFqd4q7qAR%2BD3wnDhjplu78L5sQ%2FrGHA56s1J3zL1jxK22rdOP1jYMBqD6EsJW7yy8hioCW1KHbtqa38UMaP6UasVXPH3oYZkEHgw0FfjxOa8ZWoWBIN9roGtNeNv1d9CJrcx30WoHDuOzv4N6yKxd6Qcs%3D; passport2bbs=gL2j7kgC3cl46%2Bx0UCpdpYk%2ByQ0fKXoy0T6zB4BdQOaTDsaRbVMj%2B30Q1oJJfG4B; cdb2_auth=2CqrgzHKUINGKtdSvxPZ22uiwVR2%2BchfXAv10U2ALvZjGSgCTLC9Vjq%2BU%2Betqa01JQ; vOVx_56cc_auth=14b43ACJq3nMtavRGVF%2FgiynAml5EimOO4wJryH79U9o8DHqJ%2BkAV2EnrxHNqJUxut%2B7vG%2B9EgiNxYMUNoMcFdvHRmhk; vOVx_56cc_news-sound-on=yes; vOVx_56cc_news-notice-on=yes; vOVx_56cc_news-auto-on=yes; vOVx_56cc_smile=3D1; vOVx_56cc_visitedfid=68; vOVx_56cc_viewid=tid_37707160; vOVx_56cc_st_p=1724497%7C1766741310%7Cc5fd3e11826b15e94490fdde383888f1; vOVx_56cc_yfe_in=1; vOVx_56cc_groupviewed=157; vOVx_56cc_pc_size_c=0; vOVx_56cc_ulastactivity=18755%2BZBYhXLB3HBH8LT5ISL3NYzGc%2BfHwhUUEu5QwzpgN6Dq8P8; vOVx_56cc_lip=222.71.75.75%2C1766929516; vOVx_56cc_checkpm=1; vOVx_56cc_sid=lSXIyy; vOVx_56cc_lastcheckfeed=1724497%7C1766929522; vOVx_56cc_checkfollow=1; vOVx_56cc_lastact=1766929522%09home.php%09misc; vOVx_56cc_sendmail=1",
+      "_comment": "全局飞书应用配置 - 所有FID共享同一个应用",
       "feishu": {
-        "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/30c88550-88ff-4327-a973-5ed47ae53952",
         "app_id": "cli_a9c789eb02795ccd",
         "app_secret": "dKBo9wB9G9XwL1"
       },
@@ -12,30 +12,24 @@
     "fids": {
       "147": {
         "name": "技术讨论区",
-        "_comment": "推送到技术群",
+        "_comment": "使用全局App ID/Secret，只配置webhook",
         "feishu": {
-          "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/59caf16f-eef5-4fc1-9aad-3f06aeda5858",
-          "app_id": "cli_a9c789eb02795ccd",
-          "app_secret": "dKBo9wB9G9XwL1"
+          "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/59caf16f-eef5-4fc1-9aad-3f06aeda5858"
         }
       },
       "391": {
         "name": "项目合作区",
-        "_comment": "推送到项目群",
+        "_comment": "使用全局App ID/Secret，只配置webhook",
         "feishu": {
-          "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/project_group_hook_here",
-          "app_id": "cli_project_app_id",
-          "app_secret": "project_app_secret"
+          "webhook": "YOUR_PROJECT_GROUP_WEBHOOK"
         }
       },
-  
+
       "157": {
         "name": "问答专区",
-        "_comment": "推送到问答群",
+        "_comment": "https://open.feishu.cn/open-apis/bot/v2/hook/8661086d-a124-4cb1-bae1-b33ed25ced95",
         "feishu": {
-          "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/8661086d-a124-4cb1-bae1-b33ed25ced95",
-          "app_id": "cli_qa_app_id",
-          "app_secret": "qa_app_secret"
+          "webhook": "YOUR_QA_GROUP_WEBHOOK"
         }
       }
     }
