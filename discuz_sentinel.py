@@ -51,6 +51,11 @@ FEISHU_WEBHOOK = os.getenv('FEISHU_WEBHOOK', '')
 FEISHU_APP_ID = os.getenv('FEISHU_APP_ID', '')      # 例如: cli_a4d9...
 FEISHU_APP_SECRET = os.getenv('FEISHU_APP_SECRET', '') # 例如: 8F3...
 
+# ==================== 新增这一行 ====================
+# 飞书接收目标的 ID (chat_id, user_id 等，通常以 oc_ 或 ou_ 开头)
+FEISHU_TARGET_ID = os.getenv('FEISHU_TARGET_ID', '')
+# ====================================================
+
 # 您的图床 (Cloudflare Pages)
 ZYCS_IMG_HOST = os.getenv('ZYCS_IMG_HOST', 'https://zycs-img-4sd.pages.dev')
 
@@ -122,10 +127,18 @@ class DiscuzSentinel:
     def _check_config(self):
         if not COOKIE or COOKIE == 'your_cookie_here':
             self.logger.warning("❌ Cookie 未配置")
-        if not DINGTALK_WEBHOOK and not FEISHU_WEBHOOK:
-            self.logger.warning("⚠️  未配置任何通知 Webhook")
+
+        # 检查是否有任何一种发送方式
+        has_sender = False
+        if DINGTALK_WEBHOOK: has_sender = True
+        if FEISHU_WEBHOOK: has_sender = True
+        if FEISHU_APP_ID and FEISHU_TARGET_ID: has_sender = True
+
+        if not has_sender:
+            self.logger.warning("⚠️  未配置任何有效的通知方式 (钉钉Webhook / 飞书Webhook / 飞书API)")
+
         if FEISHU_WEBHOOK and not FEISHU_APP_ID:
-            self.logger.warning("⚠️  飞书未配置 AppID/Secret，图片将无法直接显示，仅显示链接")
+            self.logger.warning("⚠️  飞书使用 Webhook 模式且未配置 AppID，图片将无法直接预览")
 
     def _get_livelastpost(self, fid: int, last_pid: int) -> Optional[Dict]:
         url = f"{BASE_URL}/forum.php"
@@ -273,9 +286,23 @@ class DiscuzSentinel:
         soup = BeautifulSoup(html_content, 'html.parser')
         images = []
         for img in soup.find_all('img'):
+            # 优先获取高清大图链接
             src = img.get('zoomfile') or img.get('file') or img.get('src')
+
             if src and 'smilies' not in src:
-                images.append(urljoin(BASE_URL + '/', src))
+                # =========== 修复代码开始 ===========
+                # 强力清洗 URL：去掉 ? 后面的所有参数
+                # 比如 .jpg?imageMogr2... 会变成纯净的 .jpg
+                if '?' in src:
+                    src = src.split('?')[0]
+                # =========== 修复代码结束 ===========
+
+                full_url = urljoin(BASE_URL + '/', src)
+
+                # 去重：防止同一张图被添加多次
+                if full_url not in images:
+                    images.append(full_url)
+
         for tag in soup(['script', 'style', 'img']):
             tag.decompose()
         return soup.get_text('\n').strip(), images
@@ -307,13 +334,14 @@ class DiscuzSentinel:
 
             img_content = r.content
 
-            # 验证图片内容
-            if len(img_content) < 100:
-                self.logger.warning(f"[图床] 图片太小: {len(img_content)} bytes")
+            # 验证内容是否为空
+            if not img_content or len(img_content) < 100:
+                self.logger.warning(f"[图床] 下载的图片太小或为空: {len(img_content)} bytes")
                 return img_url
 
+            # 严格验证：如果开头是 < !DOCTYPE 或 <html，说明下载的是网页报错
             if img_content.strip().startswith(b'<'):
-                self.logger.warning("[图床] 下载到的是HTML页面而不是图片")
+                self.logger.warning(f"[图床] 下载到的是HTML页面(可能是防盗链或404): {img_url}")
                 return img_url
 
             # 检查是否是有效的图片格式
@@ -551,9 +579,19 @@ class DiscuzSentinel:
             return False
 
     def send_feishu(self, message: str, post_data: Dict = None) -> bool:
+        # 1. 优先检查 Webhook
         webhook_url = FEISHU_WEBHOOK
-        if not webhook_url: return False
 
+        # 2. 如果没有 Webhook，检查是否具备 API 发送条件 (AppID + Secret + TargetID)
+        use_api_mode = False
+        if not webhook_url:
+            if FEISHU_APP_ID and FEISHU_APP_SECRET and FEISHU_TARGET_ID:
+                use_api_mode = True
+            else:
+                self.logger.warning("飞书配置不完整：既无 Webhook，也无 TargetID/AppID，无法发送")
+                return False
+
+        # 构建卡片内容 (webhook 和 api 通用)
         elements = [
             {
                 "tag": "div",
@@ -564,12 +602,12 @@ class DiscuzSentinel:
             }
         ]
 
-        # 飞书图片处理
+        # 图片处理逻辑
         if post_data and post_data.get('images'):
             self.logger.info(f"飞书：正在处理 {len(post_data['images'])} 张图片...")
-            
+
+            # 只要配置了 AppID/Secret，就可以尝试上传原图
             if FEISHU_APP_ID and FEISHU_APP_SECRET:
-                # 方式A：配置了 AppID -> 上传到飞书 -> 使用 image 标签显示大图
                 for img_url in post_data['images']:
                     image_key = self._upload_to_feishu_server(img_url)
                     if image_key:
@@ -579,10 +617,10 @@ class DiscuzSentinel:
                             "alt": {"tag": "plain_text", "content": "图片"}
                         })
                     time.sleep(0.5)
+            # 降级方案：使用外链
             else:
-                # 方式B：没配置 AppID -> 使用 Catbox 外链 -> 显示为点击链接
-                # (因为飞书 Webhook 无法直接渲染外链图片)
                 for img_url in post_data['images']:
+                    # 如果是 API 模式，无法渲染外链图片，只能给链接
                     new_url = self._universal_upload_for_dingtalk(img_url)
                     elements.append({
                         "tag": "div",
@@ -598,21 +636,63 @@ class DiscuzSentinel:
             "elements": [{"tag": "plain_text", "content": f"DiscuzSentinel • {datetime.now().strftime('%H:%M:%S')}"}]
         })
 
-        payload = {
-            "msg_type": "interactive",
-            "card": {
-                "config": {"wide_screen_mode": True},
-                "header": {
-                    "title": {"tag": "plain_text", "content": post_data.get('subject', '新动态')},
-                    "template": "blue"
-                },
-                "elements": elements
-            }
+        card_content = {
+            "config": {"wide_screen_mode": True},
+            "header": {
+                "title": {"tag": "plain_text", "content": post_data.get('subject', '新动态')},
+                "template": "blue"
+            },
+            "elements": elements
         }
 
         try:
-            requests.post(webhook_url, json=payload, timeout=10)
-            return True
+            if use_api_mode:
+                # =========== 模式 B: API 发送 (AppID + TargetID) ===========
+                token = self._get_feishu_token()
+                if not token:
+                    self.logger.error("无法获取飞书 Token，发送失败")
+                    return False
+
+                # 判断 Target ID 类型
+                receive_id_type = "chat_id" # 默认为群组/会话ID (oc_开头)
+                if FEISHU_TARGET_ID.startswith("ou_"):
+                    receive_id_type = "open_id"
+                elif FEISHU_TARGET_ID.startswith("on_"):
+                    receive_id_type = "union_id"
+                elif "@" in FEISHU_TARGET_ID:
+                    receive_id_type = "email"
+
+                url = f"https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type={receive_id_type}"
+                headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json; charset=utf-8"
+                }
+                payload = {
+                    "receive_id": FEISHU_TARGET_ID,
+                    "msg_type": "interactive",
+                    "content": json.dumps(card_content) # API 模式下 content 必须是字符串
+                }
+
+                resp = requests.post(url, headers=headers, json=payload, timeout=10)
+                resp_data = resp.json()
+
+                if resp_data.get("code") == 0:
+                    self.logger.info("✅ [飞书] 消息发送成功 (API模式)")
+                    return True
+                else:
+                    self.logger.error(f"[飞书] API 发送失败: {resp_data}")
+                    return False
+
+            else:
+                # =========== 模式 A: Webhook 发送 ===========
+                payload = {
+                    "msg_type": "interactive",
+                    "card": card_content
+                }
+                requests.post(webhook_url, json=payload, timeout=10)
+                self.logger.info("✅ [飞书] 消息发送成功 (Webhook模式)")
+                return True
+
         except Exception as e:
             self.logger.error(f"飞书发送异常: {e}")
             return False
