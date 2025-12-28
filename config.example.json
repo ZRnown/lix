@@ -1,0 +1,65 @@
+{
+  "_文档": "https://github.com/your-repo/DiscuzSentinel",
+  "_说明": "支持按FID配置不同的推送渠道，全局配置作为默认值",
+
+  "global": {
+    "_comment": "全局默认配置，所有FID都会继承这些设置",
+    "cookie": "your_cookie_here",
+    "dingtalk": {
+      "webhook": "https://oapi.dingtalk.com/robot/send?access_token=YOUR_GLOBAL_TOKEN",
+      "secret": "your_global_secret"
+    },
+    "feishu": {
+      "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_GLOBAL_TOKEN",
+      "app_id": "cli_global_app_id",
+      "app_secret": "global_app_secret"
+    },
+    "image_host": "https://zycs-img-4sd.pages.dev",
+    "preview_limit": 4000
+  },
+
+  "fids": {
+    "147": {
+      "name": "技术讨论区",
+      "_comment": "FID 147 的专用配置，会覆盖全局配置",
+      "dingtalk": {
+        "webhook": "https://oapi.dingtalk.com/robot/send?access_token=TECH_TOKEN",
+        "secret": "tech_secret"
+      },
+      "feishu": {
+        "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/TECH_HOOK",
+        "app_id": "cli_tech_app_id",
+        "app_secret": "tech_app_secret"
+      }
+    },
+
+    "148": {
+      "name": "生活分享区",
+      "_comment": "只推送到飞书，不推送钉钉",
+      "feishu": {
+        "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/LIFE_HOOK"
+      }
+    },
+
+    "391": {
+      "name": "项目合作区",
+      "_comment": "使用全局配置，不需要特殊设置",
+      "_空对象表示使用全局配置": true
+    },
+
+    "157": {
+      "name": "问答专区",
+      "_comment": "只推送到钉钉，不推送飞书",
+      "dingtalk": {
+        "webhook": "https://oapi.dingtalk.com/robot/send?access_token=QA_TOKEN"
+      }
+    },
+
+    "999": {
+      "name": "仅监控不推送",
+      "_comment": "设置为空对象或null禁用推送",
+      "dingtalk": null,
+      "feishu": null
+    }
+  }
+}

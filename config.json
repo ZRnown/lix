@@ -1,0 +1,28 @@
+{
+  "global": {
+    "cookie": "vOVx_56cc_saltkey=p3Ass729; vOVx_56cc_lastvisit=1765294337; 55188_passport=EtkRPs71h1Mvo5835%2BJhMKh5wc7zmjWVXoFsje4ujTcFAgXfUzwPcsYWQZ0lzbKER01xe8GimO56ABg1TsCP8beQhSRL8TmFhK%2FjstvdpRosCT4vgzG6hXJAMqbP7m%2BZJhLp24Oh6lcwm5a94cRRZni3wnZHd8KeI8gGCrGvio4%3D; passport2bbs=1VEm0m3GTUCNJg%2FM9P1MZgiE5nv8A4i4mC7sM11uqO3cbnjpdbSyhg6TLAP%2F15p3; cdb2_auth=2X6u0zCfBNNHf4BctEfRjzjwlAYoqZ4MWwmghU2DfaljTixTQ%2Bm6ADq%2BVuKtqq46JQ; vOVx_56cc_smile=3D1; vOVx_56cc_news-sound-on=yes; vOVx_56cc_news-notice-on=yes; vOVx_56cc_atarget=1; vOVx_56cc_nofavfid=1; vOVx_56cc_auth=5bff4ByUN%2FOXwWURJUiD9SIj515KycW1ICbVxb4fZys91lgIVf2%2ByMsDJh0cRGToktGgilvBdGSSt9e986HdS72zgldA; vOVx_56cc_st_p=4227767%7C1765459263%7Cf041387981974930fbcd7c8adc256352; vOVx_56cc_viewid=tid_37460325; vOVx_56cc_st_t=4227767%7C1765512515%7C5fe1390be81bf5a343d9ee693324580f; vOVx_56cc_news-auto-on=yes; vOVx_56cc_yfe_in=1; vOVx_56cc_groupviewed=147; vOVx_56cc_pc_size_c=0; vOVx_56cc_lip=220.195.205.195%2C1766631948; vOVx_56cc_sid=VG72FF; vOVx_56cc_ulastactivity=80b5sPI0nmO6l4of76X2NoG8BfHkqRwF%2FrH%2BBm0lgdq5xUbx%2FES7; vOVx_56cc_lastcheckfeed=4227767%7C1766632414; vOVx_56cc_checkfollow=1; vOVx_56cc_checkpm=1; vOVx_56cc_sendmail=1; vOVx_56cc_lastact=1766632414%09forum.php%09misc",
+    "dingtalk": {
+      "webhook": "https://oapi.dingtalk.com/robot/send?access_token=d42dc75dc7d367b9bc5cca2aabc23b5964a2c2c2372e0c9cb49e253c5e34004b",
+      "secret": ""
+    },
+    "feishu": {
+      "webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/650bf129-f18b-44cb-b9c9-490c3ddfd478",
+      "app_id": "cli_a7d8c9e4f1g2h3i4j5k6l7m8n9o0p1q2r3s4t5u6v7w8x9y0z1a2b3c4d5e6f7",
+      "app_secret": "pyyZ8n11P8fk9Swzif0q8f6sRsXeXjue"
+    },
+    "image_host": "https://zycs-img-4sd.pages.dev",
+    "preview_limit": 4000
+  },
+
+  "fids": {
+    "147": {
+      "name": "默认板块",
+      "_comment": "使用全局配置"
+    },
+
+    "148": {
+      "name": "测试板块",
+      "_comment": "使用全局配置"
+    }
+  }
+}

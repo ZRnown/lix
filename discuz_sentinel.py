@@ -33,30 +33,25 @@ except ImportError:
 
 # ==================== 配置区域 ====================
 
-# 目标驿站 FID 列表
+CONFIG_FILE = os.getenv('CONFIG_FILE', 'config.json')
+
+# 兼容旧的环境变量配置（向后兼容）
 TARGET_FIDS_STR = os.getenv('DISCUZ_TARGET_FIDS', '147,148')
 TARGET_FIDS = [int(fid.strip()) for fid in TARGET_FIDS_STR.split(',') if fid.strip()]
 
 # Cookie
 COOKIE = os.getenv('DISCUZ_COOKIE', 'your_cookie_here')
 
-# 钉钉配置
+# 钉钉配置（全局默认）
 DINGTALK_WEBHOOK = os.getenv('DINGTALK_WEBHOOK', '')
 DINGTALK_SECRET = os.getenv('DINGTALK_SECRET', '')
 
-# 飞书配置 (Webhook 必须填)
+# 飞书配置（全局默认）
 FEISHU_WEBHOOK = os.getenv('FEISHU_WEBHOOK', '')
+FEISHU_APP_ID = os.getenv('FEISHU_APP_ID', '')
+FEISHU_APP_SECRET = os.getenv('FEISHU_APP_SECRET', '')
 
-# 飞书 App 配置 (★ 填入这两项才能直接显示图片 ★)
-FEISHU_APP_ID = os.getenv('FEISHU_APP_ID', '')      # 例如: cli_a4d9...
-FEISHU_APP_SECRET = os.getenv('FEISHU_APP_SECRET', '') # 例如: 8F3...
-
-# ==================== 新增这一行 ====================
-# 飞书接收目标的 ID (chat_id, user_id 等，通常以 oc_ 或 ou_ 开头)
-FEISHU_TARGET_ID = os.getenv('FEISHU_TARGET_ID', '')
-# ====================================================
-
-# 您的图床 (Cloudflare Pages)
+# 图床配置
 ZYCS_IMG_HOST = os.getenv('ZYCS_IMG_HOST', 'https://zycs-img-4sd.pages.dev')
 
 # 基础配置
@@ -69,12 +64,14 @@ LOG_RETENTION_DAYS = 7
 
 class DiscuzSentinel:
     def __init__(self):
-        self.logger = logging.getLogger("DiscuzSentinel")
-        self.logger.setLevel(LOG_LEVEL)
         self._setup_logging()
         self.session = requests.Session()
         self.state = self._load_state()
         self._setup_session()
+
+        # 加载配置文件
+        self.config = self._load_config()
+
         # 飞书 Token 缓存
         self.feishu_token = ""
         self.feishu_token_expire = 0.0
@@ -86,11 +83,9 @@ class DiscuzSentinel:
             file_handler = TimedRotatingFileHandler(
                 LOG_FILE, when="midnight", backupCount=LOG_RETENTION_DAYS, encoding='utf-8'
             )
-            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
             handlers.append(file_handler)
-        
-        for handler in handlers:
-            self.logger.addHandler(handler)
+        logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s', handlers=handlers)
+        self.logger = logging.getLogger(__name__)
 
     def _setup_session(self):
         self.session.headers.update({
@@ -124,95 +119,95 @@ class DiscuzSentinel:
         except Exception as e:
             self.logger.error(f"保存状态失败: {e}")
     
+    def _load_config(self) -> Dict:
+        """加载JSON配置文件，如果不存在则使用环境变量配置"""
+        config = {
+            "global": {
+                "cookie": COOKIE,
+                "dingtalk": {
+                    "webhook": DINGTALK_WEBHOOK,
+                    "secret": DINGTALK_SECRET
+                },
+                "feishu": {
+                    "webhook": FEISHU_WEBHOOK,
+                    "app_id": FEISHU_APP_ID,
+                    "app_secret": FEISHU_APP_SECRET
+                },
+                "image_host": ZYCS_IMG_HOST,
+                "preview_limit": PREVIEW_LIMIT
+            },
+            "fids": {}
+        }
+
+        # 如果配置文件存在，加载它
+        if os.path.exists(CONFIG_FILE):
+            try:
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    user_config = json.load(f)
+                    self.logger.info(f"✅ 加载配置文件: {CONFIG_FILE}")
+
+                    # 合并配置
+                    if "global" in user_config:
+                        config["global"].update(user_config["global"])
+
+                    if "fids" in user_config:
+                        config["fids"] = user_config["fids"]
+
+                    # 如果配置文件中有fids，从中提取TARGET_FIDS
+                    if config["fids"]:
+                        global TARGET_FIDS
+                        TARGET_FIDS = [int(fid) for fid in config["fids"].keys()]
+
+            except Exception as e:
+                self.logger.error(f"❌ 配置文件加载失败: {e}，使用默认配置")
+        else:
+            self.logger.info(f"ℹ️  未找到配置文件 {CONFIG_FILE}，使用环境变量配置")
+
+        return config
+
     def _check_config(self):
-        if not COOKIE or COOKIE == 'your_cookie_here':
+        # 检查全局配置
+        global_config = self.config.get("global", {})
+        has_global_dingtalk = bool(global_config.get("dingtalk", {}).get("webhook"))
+        has_global_feishu = bool(global_config.get("feishu", {}).get("webhook"))
+
+        if not global_config.get("cookie") or global_config.get("cookie") == 'your_cookie_here':
             self.logger.warning("❌ Cookie 未配置")
 
-        # 检查是否有任何一种发送方式
-        has_sender = False
-        if DINGTALK_WEBHOOK: has_sender = True
-        if FEISHU_WEBHOOK: has_sender = True
-        if FEISHU_APP_ID and FEISHU_TARGET_ID: has_sender = True
+        # 检查每个FID的配置
+        fid_configs = self.config.get("fids", {})
+        if not fid_configs and not has_global_dingtalk and not has_global_feishu:
+            self.logger.warning("⚠️  未配置任何通知 Webhook")
 
-        if not has_sender:
-            self.logger.warning("⚠️  未配置任何有效的通知方式 (钉钉Webhook / 飞书Webhook / 飞书API)")
+        for fid, fid_config in fid_configs.items():
+            fid_name = fid_config.get("name", f"FID{fid}")
+            has_dingtalk = bool(fid_config.get("dingtalk", {}).get("webhook")) or has_global_dingtalk
+            has_feishu = bool(fid_config.get("feishu", {}).get("webhook")) or has_global_feishu
 
-        if FEISHU_WEBHOOK and not FEISHU_APP_ID:
-            self.logger.warning("⚠️  飞书使用 Webhook 模式且未配置 AppID，图片将无法直接预览")
+            if not has_dingtalk and not has_feishu:
+                self.logger.warning(f"⚠️  {fid_name} (FID:{fid}) 未配置推送渠道")
+
+            # 检查飞书图片配置
+            feishu_config = fid_config.get("feishu", {})
+            if (feishu_config.get("webhook") or has_global_feishu) and not (feishu_config.get("app_id") or global_config.get("feishu", {}).get("app_id")):
+                self.logger.warning(f"⚠️  {fid_name} (FID:{fid}) 飞书未配置 AppID/Secret，图片将无法直接显示，仅显示链接")
 
     def _get_livelastpost(self, fid: int, last_pid: int) -> Optional[Dict]:
         url = f"{BASE_URL}/forum.php"
         params = {'mod': 'misc', 'action': 'livelastpost', 'type': 'post', 'fid': fid, 'postid': last_pid}
         headers = {'Referer': f"{BASE_URL}/group-{fid}-1.html", 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
-
-        # 添加重试机制，最多重试2次
-        for attempt in range(3):
-            try:
-                self.logger.debug(f"FID {fid}: 请求 livelastpost (尝试 {attempt + 1}/3)")
-                response = self.session.get(url, params=params, headers=headers, timeout=15)
-
-                # 检查HTTP状态码
-                if response.status_code == 504:
-                    self.logger.warning(f"FID {fid}: 服务器网关超时 (504)，论坛服务器可能负载过高或维护中")
-                    if attempt < 2:  # 不是最后一次尝试
-                        self.logger.info(f"FID {fid}: {5 * (attempt + 1)} 秒后重试...")
-                        time.sleep(5 * (attempt + 1))
-                        continue
-                    return None
-
-                if response.status_code != 200:
-                    self.logger.warning(f"FID {fid}: HTTP {response.status_code} 错误")
-                    return None
-
-                # 检查响应内容是否包含登录提示
-                response_text = response.text
-                if 'not_loggedin' in response_text:
-                    self.logger.warning(f"FID {fid}: Cookie 可能已失效")
-                    return None
-            
-                if '504 Gateway Time-out' in response_text:
-                    self.logger.warning(f"FID {fid}: 响应内容显示网关超时")
-                    if attempt < 2:
-                        self.logger.info(f"FID {fid}: {5 * (attempt + 1)} 秒后重试...")
-                        time.sleep(5 * (attempt + 1))
-                        continue
-                    return None
-
-                # 尝试解析JSON
-                try:
-                    data = response.json()
-                except json.JSONDecodeError as e:
-                    self.logger.warning(f"FID {fid}: 响应不是有效JSON: {e}")
-                    self.logger.debug(f"FID {fid}: 响应内容前200字符: {response_text[:200]}")
-                    return None
-            
-                count = int(data.get('count', 0))
-                if count > 0:
-                    self.logger.info(f"FID {fid}: 发现 {count} 条新内容")
-                    return data
-                else:
-                    self.logger.debug(f"FID {fid}: 暂无新内容 (count={count})")
-                    return None
-            
-            except requests.exceptions.Timeout:
-                self.logger.warning(f"FID {fid}: 请求超时 (尝试 {attempt + 1}/3)")
-                if attempt < 2:
-                    time.sleep(3)
-                    continue
+        try:
+            response = self.session.get(url, params=params, headers=headers, timeout=10)
+            if 'not_loggedin' in response.text:
+                self.logger.warning("Cookie 可能已失效")
                 return None
-
-            except requests.exceptions.RequestException as e:
-                self.logger.error(f"FID {fid}: 网络请求异常: {e}")
-                if attempt < 2:
-                    time.sleep(3)
-                    continue
-                return None
-
-            except Exception as e:
-                self.logger.error(f"FID {fid}: 处理 livelastpost 时出现异常: {e}")
-                return None
-
-        return None
+            data = response.json()
+            if int(data.get('count', 0)) > 0:
+                self.logger.info(f"FID {fid}: 发现 {data.get('count')} 条新内容")
+                return data
+            return None
+        except Exception:
+            return None
 
     def _get_thread_detail(self, tid: int, target_pid: Optional[int]) -> Optional[Dict]:
         url = f"{BASE_URL}/api/mobile/index.php"
@@ -286,23 +281,9 @@ class DiscuzSentinel:
         soup = BeautifulSoup(html_content, 'html.parser')
         images = []
         for img in soup.find_all('img'):
-            # 优先获取高清大图链接
             src = img.get('zoomfile') or img.get('file') or img.get('src')
-
             if src and 'smilies' not in src:
-                # =========== 修复代码开始 ===========
-                # 强力清洗 URL：去掉 ? 后面的所有参数
-                # 比如 .jpg?imageMogr2... 会变成纯净的 .jpg
-                if '?' in src:
-                    src = src.split('?')[0]
-                # =========== 修复代码结束 ===========
-
-                full_url = urljoin(BASE_URL + '/', src)
-
-                # 去重：防止同一张图被添加多次
-                if full_url not in images:
-                    images.append(full_url)
-
+                images.append(urljoin(BASE_URL + '/', src))
         for tag in soup(['script', 'style', 'img']):
             tag.decompose()
         return soup.get_text('\n').strip(), images
@@ -321,175 +302,44 @@ class DiscuzSentinel:
     # ================= 钉钉专用：全能外链上传 =================
     def _universal_upload_for_dingtalk(self, img_url: str) -> str:
         """
-        上传到自建图床：http://frp-cup.com:12245/upload/upload.html
-        增加图片验证和错误处理
+        全能上传：Catbox.moe (强力) -> CF Imgur模式 -> CF Telegraph模式
         """
         try:
             headers = {"Referer": BASE_URL + "/", "User-Agent": self.session.headers.get("User-Agent")}
             r = self.session.get(img_url, headers=headers, timeout=15)
-
-            if r.status_code != 200:
-                self.logger.warning(f"[图床] 下载图片失败: HTTP {r.status_code}")
-                return img_url
-
+            if r.status_code != 200: return img_url
+            if len(r.content) < 100 or r.content.strip().startswith(b'<'): return img_url
             img_content = r.content
+        except: return img_url
 
-            # 验证内容是否为空
-            if not img_content or len(img_content) < 100:
-                self.logger.warning(f"[图床] 下载的图片太小或为空: {len(img_content)} bytes")
-                return img_url
-
-            # 严格验证：如果开头是 < !DOCTYPE 或 <html，说明下载的是网页报错
-            if img_content.strip().startswith(b'<'):
-                self.logger.warning(f"[图床] 下载到的是HTML页面(可能是防盗链或404): {img_url}")
-                return img_url
-
-            # 检查是否是有效的图片格式
-            if not self._is_valid_image(img_content):
-                self.logger.warning("[图床] 图片格式无效或损坏")
-                return img_url
-
-        except Exception as e:
-            self.logger.warning(f"[图床] 下载图片异常: {e}")
-            return img_url
-
-        # 确定MIME类型和扩展名
         mime = 'image/jpeg'
         ext = '.jpg'
         if img_content.startswith(b'\x89PNG'): mime, ext = 'image/png', '.png'
         elif img_content.startswith(b'GIF8'): mime, ext = 'image/gif', '.gif'
         filename = f"img_{int(time.time())}_{random.randint(100,999)}{ext}"
 
-        # 自建图床上传（优化版，适配国内网络环境）
-        for attempt in range(3):  # 最多重试3次
-            res = None  # 初始化res变量，避免作用域问题
+        # 1. Catbox
+        try:
+            files = {'fileToUpload': (filename, img_content, mime)}
+            res = requests.post("https://catbox.moe/user/api.php", data={'reqtype': 'fileupload'}, files=files, timeout=30)
+            if res.status_code == 200 and res.text.startswith("http"):
+                self.logger.info(f"✅ [钉钉] Catbox 上传: {res.text.strip()}")
+                return res.text.strip()
+        except: pass
+
+        # 2. CF Pages
+        if ZYCS_IMG_HOST:
             try:
-                upload_url = "http://frp-cup.com:12245/upload/upload.html"
-
-                # 构建multipart/form-data
+                # Imgur Mode
+                upload_url = ZYCS_IMG_HOST.rstrip('/') + "/upload"
                 files = {'image': (filename, img_content, mime)}
-
-                # 设置请求头（适配国内网络环境）
-                headers = {
-                    'Accept': 'application/json, text/javascript, */*; q=0.01',
-                    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',  # 调整语言优先级
-                    'Connection': 'keep-alive',
-                    'Origin': 'http://frp-cup.com:12245',
-                    'Referer': 'http://frp-cup.com:12245/',
-                    # 使用更通用的User-Agent，避免触发反爬虫
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': None  # 让requests自动设置multipart边界
-                }
-
-                self.logger.debug(f"[自建图床] 尝试上传 {filename} (尝试 {attempt + 1}/3)")
-
-                # 发送上传请求（增加超时时间，禁用SSL验证）
-                upload_timeout = 60 if attempt == 0 else 45  # 逐渐减少超时时间
-                res = requests.post(
-                    upload_url,
-                    files=files,
-                    headers=headers,
-                    timeout=upload_timeout,
-                    verify=False,
-                    allow_redirects=True
-                )
-
-                # 检查响应
+                res = requests.post(upload_url, headers={'Authorization': 'Client-ID 546c25a59c58ad7'}, files=files, data={'type': 'file'}, timeout=15)
                 if res.status_code == 200:
-                    try:
-                        data = res.json()
-                        if data.get('code') == 200 and 'data' in data:
-                            img_url_result = data['data'].get('url')
-                            if img_url_result:
-                                # URL中的\/需要转义
-                                final_url = img_url_result.replace('\\/', '/')
-                                self.logger.info(f"✅ [自建图床] 上传成功: {final_url}")
-                                return final_url
-                        else:
-                            # 特殊处理"非法图片文件"错误
-                            error_msg = data.get('error', '')
-                            if '非法图片文件' in error_msg:
-                                self.logger.warning(f"[自建图床] 服务器拒绝图片 (非法图片文件): {img_url}")
-                                self.logger.debug(f"[自建图床] 图片大小: {len(img_content)} bytes")
-                                # 对于非法图片文件，不再重试，直接返回原链接
-                                return img_url
-                            else:
-                                self.logger.warning(f"[自建图床] API响应错误: {data}")
-                    except json.JSONDecodeError as e:
-                        self.logger.warning(f"[自建图床] 响应不是有效JSON: {e}")
-                        self.logger.debug(f"[自建图床] 响应内容: {res.text[:200]}")
-                else:
-                    self.logger.warning(f"[自建图床] HTTP {res.status_code} 错误")
-
-            except requests.exceptions.ConnectionError as e:
-                if "RemoteDisconnected" in str(e) or "Connection aborted" in str(e) or "Connection reset by peer" in str(e):
-                    self.logger.warning(f"[自建图床] 连接被服务器断开 (尝试 {attempt + 1}/3): {e}")
-                else:
-                    self.logger.warning(f"[自建图床] 连接错误 (尝试 {attempt + 1}/3): {e}")
-            except requests.exceptions.Timeout as e:
-                self.logger.warning(f"[自建图床] 请求超时 ({upload_timeout if 'upload_timeout' in locals() else 60}s) (尝试 {attempt + 1}/3): {e}")
-            except requests.exceptions.RequestException as e:
-                self.logger.warning(f"[自建图床] 网络请求异常 (尝试 {attempt + 1}/3): {e}")
-            except Exception as e:
-                self.logger.error(f"[自建图床] 未知异常 (尝试 {attempt + 1}/3): {e}")
-
-            # 只有在非"非法图片文件"错误时才重试
-            # 因为图片本身有问题，重试也没有意义
-            should_retry = True
-            if res and hasattr(res, 'status_code') and res.status_code == 200:
-                try:
-                    response_data = res.json()
-                    if response_data.get('error') == '非法图片文件':
-                        should_retry = False
-                        self.logger.info("[自建图床] 图片文件非法，跳过重试")
-                except:
-                    pass
-
-            if should_retry and attempt < 2:
-                retry_delay = 2 * (attempt + 1)  # 2秒, 4秒
-                self.logger.info(f"[自建图床] {retry_delay} 秒后重试...")
-                time.sleep(retry_delay)
-            elif not should_retry:
-                break  # 跳出重试循环
-
-        # 上传失败，返回原链接
+                    link = res.json().get('data', {}).get('link')
+                    if link: return link
+            except: pass
+            
         return img_url
-
-    def _is_valid_image(self, image_data: bytes) -> bool:
-        """
-        验证图片数据是否有效
-        """
-        if not image_data or len(image_data) < 4:
-            return False
-
-        # 检查文件头标识
-        # PNG: \x89PNG
-        # JPEG: \xFF\xD8
-        # GIF: GIF8
-        # BMP: BM
-        # WebP: RIFF....WEBP
-
-        if image_data.startswith(b'\x89PNG'):
-            return True
-        elif image_data.startswith(b'\xFF\xD8'):
-            return True
-        elif image_data.startswith(b'GIF8'):
-            return True
-        elif image_data.startswith(b'BM'):
-            return True
-        elif len(image_data) > 12 and image_data.startswith(b'RIFF') and b'WEBP' in image_data[8:12]:
-            return True
-
-        # 检查是否包含HTML（下载失败的标志）
-        if b'<html' in image_data.lower() or b'<!DOCTYPE' in image_data.lower():
-            return False
-
-        # 检查是否是其他常见的图片格式或二进制数据
-        # 对于Discuz论坛的动态图片，可能不是标准格式但仍然有效
-        # 只要不是HTML/XML内容就可以尝试上传
-
-        return False
 
     # ================= 飞书专用：获取Token并上传 =================
     def _get_feishu_token(self) -> Optional[str]:
@@ -508,7 +358,7 @@ class DiscuzSentinel:
                 return self.feishu_token
         except Exception as e:
             self.logger.error(f"飞书 Token 获取失败: {e}")
-            return None
+        return None
 
     def _upload_to_feishu_server(self, img_url: str) -> Optional[str]:
         """
@@ -538,12 +388,15 @@ class DiscuzSentinel:
                 self.logger.warning(f"[飞书] 上传失败: {data}")
         except Exception as e:
             self.logger.error(f"[飞书] 上传异常: {e}")
-            return None
+        return None
 
     # ================= 发送逻辑 =================
 
-    def send_dingtalk(self, message: str, post_data: Dict = None) -> bool:
-        webhook_url = DINGTALK_WEBHOOK
+    def send_dingtalk(self, message: str, post_data: Dict = None, dingtalk_config: Dict = None) -> bool:
+        if not dingtalk_config:
+            dingtalk_config = self.config.get("global", {}).get("dingtalk", {})
+
+        webhook_url = dingtalk_config.get("webhook", "")
         if not webhook_url: return False
 
         final_markdown = message
@@ -559,10 +412,11 @@ class DiscuzSentinel:
                 time.sleep(0.5)
 
         # 加签
-        if DINGTALK_SECRET:
+        secret = dingtalk_config.get("secret", "")
+        if secret:
             timestamp = str(round(time.time() * 1000))
-            string_to_sign = f"{timestamp}\n{DINGTALK_SECRET}"
-            hmac_code = hmac.new(DINGTALK_SECRET.encode('utf-8'), string_to_sign.encode('utf-8'), digestmod=hashlib.sha256).digest()
+            string_to_sign = f"{timestamp}\n{secret}"
+            hmac_code = hmac.new(secret.encode('utf-8'), string_to_sign.encode('utf-8'), digestmod=hashlib.sha256).digest()
             sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
             delimiter = '&' if '?' in webhook_url else '?'
             webhook_url = f"{webhook_url}{delimiter}timestamp={timestamp}&sign={sign}"
@@ -578,20 +432,13 @@ class DiscuzSentinel:
             self.logger.error(f"钉钉发送异常: {e}")
             return False
 
-    def send_feishu(self, message: str, post_data: Dict = None) -> bool:
-        # 1. 优先检查 Webhook
-        webhook_url = FEISHU_WEBHOOK
+    def send_feishu(self, message: str, post_data: Dict = None, feishu_config: Dict = None) -> bool:
+        if not feishu_config:
+            feishu_config = self.config.get("global", {}).get("feishu", {})
 
-        # 2. 如果没有 Webhook，检查是否具备 API 发送条件 (AppID + Secret + TargetID)
-        use_api_mode = False
-        if not webhook_url:
-            if FEISHU_APP_ID and FEISHU_APP_SECRET and FEISHU_TARGET_ID:
-                use_api_mode = True
-            else:
-                self.logger.warning("飞书配置不完整：既无 Webhook，也无 TargetID/AppID，无法发送")
-                return False
+        webhook_url = feishu_config.get("webhook", "")
+        if not webhook_url: return False
 
-        # 构建卡片内容 (webhook 和 api 通用)
         elements = [
             {
                 "tag": "div",
@@ -602,25 +449,37 @@ class DiscuzSentinel:
             }
         ]
 
-        # 图片处理逻辑
+        # 飞书图片处理
         if post_data and post_data.get('images'):
             self.logger.info(f"飞书：正在处理 {len(post_data['images'])} 张图片...")
 
-            # 只要配置了 AppID/Secret，就可以尝试上传原图
-            if FEISHU_APP_ID and FEISHU_APP_SECRET:
-                for img_url in post_data['images']:
-                    image_key = self._upload_to_feishu_server(img_url)
-                    if image_key:
-                        elements.append({
-                            "tag": "img",
-                            "img_key": image_key,
-                            "alt": {"tag": "plain_text", "content": "图片"}
-                        })
-                    time.sleep(0.5)
-            # 降级方案：使用外链
+            app_id = feishu_config.get("app_id", "")
+            app_secret = feishu_config.get("app_secret", "")
+
+            if app_id and app_secret:
+                # 方式A：配置了 AppID -> 上传到飞书 -> 使用 image 标签显示大图
+                # 临时设置飞书的token获取参数
+                global FEISHU_APP_ID, FEISHU_APP_SECRET
+                old_app_id, old_app_secret = FEISHU_APP_ID, FEISHU_APP_SECRET
+                FEISHU_APP_ID, FEISHU_APP_SECRET = app_id, app_secret
+
+                try:
+                    for img_url in post_data['images']:
+                        image_key = self._upload_to_feishu_server(img_url)
+                        if image_key:
+                            elements.append({
+                                "tag": "img",
+                                "img_key": image_key,
+                                "alt": {"tag": "plain_text", "content": "图片"}
+                            })
+                        time.sleep(0.5)
+                finally:
+                    # 恢复全局配置
+                    FEISHU_APP_ID, FEISHU_APP_SECRET = old_app_id, old_app_secret
             else:
+                # 方式B：没配置 AppID -> 使用 Catbox 外链 -> 显示为点击链接
+                # (因为飞书 Webhook 无法直接渲染外链图片)
                 for img_url in post_data['images']:
-                    # 如果是 API 模式，无法渲染外链图片，只能给链接
                     new_url = self._universal_upload_for_dingtalk(img_url)
                     elements.append({
                         "tag": "div",
@@ -636,67 +495,25 @@ class DiscuzSentinel:
             "elements": [{"tag": "plain_text", "content": f"DiscuzSentinel • {datetime.now().strftime('%H:%M:%S')}"}]
         })
 
-        card_content = {
-            "config": {"wide_screen_mode": True},
-            "header": {
-                "title": {"tag": "plain_text", "content": post_data.get('subject', '新动态')},
-                "template": "blue"
-            },
-            "elements": elements
+        payload = {
+            "msg_type": "interactive",
+            "card": {
+                "config": {"wide_screen_mode": True},
+                "header": {
+                    "title": {"tag": "plain_text", "content": post_data.get('subject', '新动态')},
+                    "template": "blue"
+                },
+                "elements": elements
+            }
         }
 
         try:
-            if use_api_mode:
-                # =========== 模式 B: API 发送 (AppID + TargetID) ===========
-                token = self._get_feishu_token()
-                if not token:
-                    self.logger.error("无法获取飞书 Token，发送失败")
-                    return False
-
-                # 判断 Target ID 类型
-                receive_id_type = "chat_id" # 默认为群组/会话ID (oc_开头)
-                if FEISHU_TARGET_ID.startswith("ou_"):
-                    receive_id_type = "open_id"
-                elif FEISHU_TARGET_ID.startswith("on_"):
-                    receive_id_type = "union_id"
-                elif "@" in FEISHU_TARGET_ID:
-                    receive_id_type = "email"
-
-                url = f"https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type={receive_id_type}"
-                headers = {
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json; charset=utf-8"
-                }
-                payload = {
-                    "receive_id": FEISHU_TARGET_ID,
-                    "msg_type": "interactive",
-                    "content": json.dumps(card_content) # API 模式下 content 必须是字符串
-                }
-
-                resp = requests.post(url, headers=headers, json=payload, timeout=10)
-                resp_data = resp.json()
-
-                if resp_data.get("code") == 0:
-                    self.logger.info("✅ [飞书] 消息发送成功 (API模式)")
-                    return True
-                else:
-                    self.logger.error(f"[飞书] API 发送失败: {resp_data}")
-                    return False
-
-            else:
-                # =========== 模式 A: Webhook 发送 ===========
-                payload = {
-                    "msg_type": "interactive",
-                    "card": card_content
-                }
-                requests.post(webhook_url, json=payload, timeout=10)
-                self.logger.info("✅ [飞书] 消息发送成功 (Webhook模式)")
-                return True
-
+            requests.post(webhook_url, json=payload, timeout=10)
+            return True
         except Exception as e:
             self.logger.error(f"飞书发送异常: {e}")
             return False
-    
+
     def run(self):
         self.logger.info(f"DiscuzSentinel 启动 | 监控: {TARGET_FIDS}")
         if not (FEISHU_APP_ID and FEISHU_APP_SECRET):
@@ -717,7 +534,7 @@ class DiscuzSentinel:
                             pid = int(item.get('pid', 0))
                             if pid <= max_pid:
                                 continue
-                
+
                             # 获取帖子数据
                             post_data = self._extract_from_livelastpost(item, fid)
                             tid = self._extract_tid_from_message(item.get('message', ''))
@@ -747,22 +564,29 @@ class DiscuzSentinel:
                                 msg = self._format_message(post_data)
                                 pid = post_data['_pid']
 
+                                # 根据FID获取推送配置
+                                fid_config = self.config.get("fids", {}).get(str(fid), {})
+                                global_config = self.config.get("global", {})
+
                                 # 钉钉推送
-                                if DINGTALK_WEBHOOK:
-                                    self.send_dingtalk(msg, post_data)
+                                dingtalk_config = fid_config.get("dingtalk") or global_config.get("dingtalk", {})
+                                if dingtalk_config.get("webhook"):
+                                    self.send_dingtalk(msg, post_data, dingtalk_config)
+
                                 # 飞书推送
-                                if FEISHU_WEBHOOK:
+                                feishu_config = fid_config.get("feishu") or global_config.get("feishu", {})
+                                if feishu_config.get("webhook"):
                                     time.sleep(1)
-                                    self.send_feishu(msg, post_data)
+                                    self.send_feishu(msg, post_data, feishu_config)
 
                                 self.logger.info(f"已推送 PID {pid} (时间: {post_data.get('time', '未知')})")
 
                                 # 推送间隔，避免触发限流
                                 time.sleep(1.5)
 
-                        # 更新状态
-                        self.state.setdefault(fid, {})['last_pid'] = max_pid
-                        self._save_state()
+                            # 更新状态
+                            self.state.setdefault(fid, {})['last_pid'] = max_pid
+                            self._save_state()
 
                     time.sleep(3)
                 time.sleep(random.randint(30, 60))
